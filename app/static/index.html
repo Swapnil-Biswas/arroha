@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HH Goa 2026 — Multilingual Voice RAG</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-group">
+        <div class="badge">HH GOA 2026</div>
+        <h1>Multilingual Voice RAG</h1>
+        <p class="subtitle">Real-time Hybrid Search & Grounded Generation over MSMARCO-XI (<200ms target)</p>
+      </div>
+      <div class="status-group">
+        <div class="status-pill" id="health-status">
+          <span class="status-dot"></span>
+          <span id="health-text">Connecting...</span>
+        </div>
+        <div class="stat-pill" id="model-pill">Qwen3 4B (Q4_K_M)</div>
+        <div class="stat-pill" id="docs-pill">0 Indexed Chunks</div>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="main-content">
+      <!-- Input Panel -->
+      <section class="card input-card">
+        <div class="card-header">
+          <h2>Query Input</h2>
+          <span class="badge-sub">Text & Spoken Voice</span>
+        </div>
+
+        <div class="voice-controls">
+          <button id="mic-btn" class="mic-button" title="Click to Record Spoken Voice">
+            <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span id="mic-text">Hold or Click to Speak</span>
+          </button>
+          <div id="recording-indicator" class="recording-indicator hidden">
+            <span class="pulse"></span> Recording Audio...
+          </div>
+        </div>
+
+        <div class="input-form">
+          <div class="input-wrapper">
+            <textarea id="query-input" placeholder="Ask a question in Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, English..." rows="3"></textarea>
+          </div>
+          
+          <div class="sample-queries">
+            <span class="sample-label">Try sample:</span>
+            <button class="sample-btn" data-query="भारत की राजधानी क्या है और इसका इतिहास क्या है?">🇮🇳 Hindi Capital</button>
+            <button class="sample-btn" data-query="রবীন্দ্রনাথ ঠাকুর কে ছিলেন এবং তিনি কোন পুরস্কার পেয়েছিলেন?">🇧🇩 Bengali Poet</button>
+            <button class="sample-btn" data-query="தமிழ்நாட்டின் தலைநகரம் எது மற்றும் அதன் சிறப்பு என்ன?">🇮🇳 Tamil Nadu</button>
+            <button class="sample-btn" data-query="महाराष्ट्राची राजधानी कोणती आहे?">🇮🇳 Maharashtra</button>
+            <button class="sample-btn" data-query="How does Retrieval-Augmented Generation work in voice pipelines?">🇬🇧 Voice RAG</button>
+          </div>
+
+          <div class="actions-row">
+            <div class="weight-controls">
+              <label>Dense (FAISS): <span id="dense-val">0.6</span></label>
+              <input type="range" id="dense-slider" min="0" max="1" step="0.1" value="0.6">
+            </div>
+            <button id="submit-btn" class="btn btn-primary">
+              <span>Execute RAG Pipeline</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Panel -->
+      <section class="card results-card" id="results-panel">
+        <div class="card-header">
+          <h2>Grounded Response</h2>
+          <div class="badge-group">
+            <span id="lang-badge" class="badge-lang">Language: --</span>
+            <span id="grounding-badge" class="badge-grounding">Grounding: --</span>
+          </div>
+        </div>
+
+        <div class="answer-box">
+          <div id="answer-text" class="placeholder-text">Submit a query or spoken audio to generate a grounded multilingual answer.</div>
+        </div>
+
+        <!-- Latency Dashboard -->
+        <div class="latency-dashboard">
+          <div class="latency-header">
+            <h3>Latency Instrumentation</h3>
+            <div id="total-latency-badge" class="latency-pill">0.0 ms</div>
+          </div>
+
+          <div class="latency-grid" id="latency-grid">
+            <div class="latency-item"><span class="lbl">STT / Voice</span><span class="val" id="lat-stt">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Input Guardrail</span><span class="val" id="lat-input">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Query Embedding</span><span class="val" id="lat-embed">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Vector Search (FAISS)</span><span class="val" id="lat-vector">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Lexical Search (BM25)</span><span class="val" id="lat-bm25">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Hybrid Fusion</span><span class="val" id="lat-fusion">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">LLM Generation</span><span class="val" id="lat-llm">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Grounding Check</span><span class="val" id="lat-grounding">0.0 ms</span></div>
+          </div>
+        </div>
+
+        <!-- Retrieved Sources -->
+        <div class="sources-section">
+          <h3>Retrieved Context Sources</h3>
+          <div id="sources-list" class="sources-list">
+            <div class="empty-sources">No retrieved sources yet.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
