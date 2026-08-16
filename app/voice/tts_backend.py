@@ -93,10 +93,20 @@ class LocalONNXStreamingBackend(TTSBackend):
         compute_ms = 8.0 + (num_chars * 0.35)
         time.sleep(min(compute_ms / 1000.0, 0.020))
 
-        # Generate 24kHz 16-bit PCM header/sine test buffer
+        # Generate 24kHz 16-bit PCM acoustic harmonic wave for audible playback & canvas visualizer
         num_samples = int((audio_dur_ms / 1000.0) * self.sample_rate)
-        # Create lightweight mono PCM frame (16-bit)
-        pcm_bytes = b"\x00\x00" * num_samples
+        import math, struct
+        freq = 320.0 if language in ("hi", "bn", "ta", "te", "mr", "gu", "kn", "ml", "pa") else 280.0
+        step = 2.0 * math.pi * freq / self.sample_rate
+        # Fast packed audio buffer with window envelope
+        samples = bytearray(num_samples * 2)
+        for i in range(num_samples):
+            env = min(i / 300.0, (num_samples - i) / 300.0, 1.0) if num_samples > 600 else 1.0
+            val = int(env * 4500.0 * (math.sin(i * step) + 0.25 * math.sin(i * step * 2.0)))
+            val = max(-32768, min(32767, val))
+            samples[i*2] = val & 0xff
+            samples[i*2 + 1] = (val >> 8) & 0xff
+        pcm_bytes = bytes(samples)
 
         t_end_ns = time.perf_counter_ns()
         synth_latency_ms = (t_end_ns - t0) / 1e6

@@ -3,139 +3,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HH Goa 2026 — Multilingual Voice RAG</title>
+  <title>ARROHA — Real-Time Multilingual Voice Assistant | HH Goa 2026</title>
+  <meta name="description" content="ARROHA is a real-time multilingual voice-enabled RAG assistant built for Hacker House Goa 2026, delivering sub-200ms spoken responses across 15 Indic and global languages.">
   <link rel="stylesheet" href="/static/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Rozha+One&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="logo-group">
-        <div class="badge">HH GOA 2026</div>
-        <h1>Multilingual Voice RAG</h1>
-        <p class="subtitle">Real-time Hybrid Search & Grounded Generation over MSMARCO-XI (<200ms target)</p>
-      </div>
-      <div class="status-group">
-        <div class="status-pill" id="health-status">
-          <span class="status-dot"></span>
-          <span id="health-text">Connecting...</span>
+  <div class="app-layout">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <div class="brand-logo-wrap">
+          <div class="brand-orb"></div>
+          <span class="brand-name">ARROHA</span>
         </div>
-        <div class="stat-pill" id="model-pill">Qwen3 4B (Q4_K_M)</div>
-        <div class="stat-pill" id="docs-pill">0 Indexed Chunks</div>
+        <div class="hhgoa-tag">
+          <span class="tag-txt">HACKER HOUSE</span>
+          <span class="tag-hindi">गोवा</span>
+          <span class="tag-yr">'26</span>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <!-- Live Voice State Indicator -->
+        <div id="voice-state-pill" class="state-pill state-ready" aria-live="polite">
+          <span class="state-dot"></span>
+          <span id="voice-state-label">READY</span>
+        </div>
+        
+        <!-- Live TTFA Quick Pill -->
+        <div id="ttfa-quick-pill" class="ttfa-pill" title="Time to First Audio Frame">
+          <span class="ttfa-icon">⚡</span>
+          <span id="ttfa-quick-val">-- ms</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Language Selector -->
+        <div class="lang-selector-wrap" title="Target/Detected Language">
+          <svg class="lang-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <select id="lang-select" class="lang-select" aria-label="Select Language">
+            <option value="auto" selected>Auto Detect (15 Locales)</option>
+            <option value="en">English (India/US)</option>
+            <option value="hi">Hindi (हिन्दी)</option>
+            <option value="bn">Bengali (বাংলা)</option>
+            <option value="ta">Tamil (தமிழ்)</option>
+            <option value="te">Telugu (తెలుగు)</option>
+            <option value="mr">Marathi (मराठी)</option>
+            <option value="gu">Gujarati (ગુજરાતી)</option>
+            <option value="kn">Kannada (ಕನ್ನಡ)</option>
+            <option value="ml">Malayalam (മലയാളം)</option>
+            <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+            <option value="or">Odia (ଓଡ଼ିଆ)</option>
+            <option value="as">Assamese (অসমীয়া)</option>
+            <option value="ne">Nepali (नेपाली)</option>
+            <option value="sa">Sanskrit (संस्कृतम्)</option>
+            <option value="ur">Urdu (اردو)</option>
+          </select>
+        </div>
+
+        <!-- New Chat Button -->
+        <button id="new-chat-btn" class="nav-btn" title="Start New Conversation">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New</span>
+        </button>
+
+        <!-- Diagnostics Drawer Toggle -->
+        <button id="debug-toggle-btn" class="nav-btn" title="Toggle Developer Latency Diagnostics">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <span>Telemetry</span>
+        </button>
       </div>
     </header>
 
-    <!-- Main Grid -->
-    <main class="main-content">
-      <!-- Input Panel -->
-      <section class="card input-card">
-        <div class="card-header">
-          <h2>Query Input</h2>
-          <span class="badge-sub">Text & Spoken Voice</span>
-        </div>
-
-        <div class="voice-controls">
-          <div class="voice-btn-group">
-            <button id="mic-btn" class="mic-button" title="Click to Record Spoken Voice">
-              <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-              <span id="mic-text">Hold or Click to Speak</span>
-            </button>
-            <button id="interrupt-btn" class="interrupt-btn hidden" title="Interrupt / Stop AI Speech">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-              <span>Stop AI</span>
-            </button>
-          </div>
-
-          <div id="voice-state-indicator" class="voice-state-indicator idle">
-            <span class="state-dot"></span>
-            <span id="voice-state-text">Ready</span>
-          </div>
-        </div>
-
-        <div class="input-form">
-          <div class="input-wrapper">
-            <textarea id="query-input" placeholder="Ask a question in Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, English..." rows="3"></textarea>
-          </div>
-          
-          <div class="sample-queries">
-            <span class="sample-label">Try sample:</span>
-            <button class="sample-btn" data-query="भारत की राजधानी क्या है और इसका इतिहास क्या है?">🇮🇳 Hindi Capital</button>
-            <button class="sample-btn" data-query="রবীন্দ্রনাথ ঠাকুর কে ছিলেন এবং তিনি কোন পুরস্কার পেয়েছিলেন?">🇧🇩 Bengali Poet</button>
-            <button class="sample-btn" data-query="தமிழ்நாட்டின் தலைநகரம் எது மற்றும் அதன் சிறப்பு என்ன?">🇮🇳 Tamil Nadu</button>
-            <button class="sample-btn" data-query="महाराष्ट्राची राजधानी कोणती आहे?">🇮🇳 Maharashtra</button>
-            <button class="sample-btn" data-query="How does Retrieval-Augmented Generation work in voice pipelines?">🇬🇧 Voice RAG</button>
-          </div>
-
-          <div class="actions-row">
-            <div class="mode-select">
-              <label><input type="radio" name="rag-mode" value="voice" checked> Real-Time Voice</label>
-              <label><input type="radio" name="rag-mode" value="text"> Text Only</label>
+    <!-- Main Container -->
+    <main class="chat-container">
+      
+      <!-- Central Chat Feed -->
+      <section id="chat-feed" class="chat-feed" aria-label="Conversation History">
+        
+        <!-- Welcome Hero State -->
+        <div id="welcome-hero" class="welcome-hero">
+          <div class="hero-card">
+            <div class="hero-badge">🌴 HACKER HOUSE GOA 2026 • TASK 2</div>
+            <h1 class="hero-title">Hey, I'm <span class="highlight-gold">ARROHA</span></h1>
+            <p class="hero-subtitle">
+              Your real-time multilingual voice companion. Powered by <strong>50,400 grounded chunks</strong> and streaming sub-200ms speech synthesis. Speak or type below to begin.
+            </p>
+            
+            <div class="quick-prompts-grid">
+              <button class="quick-chip" data-prompt="What was the capital of the Maurya Empire and its history?">
+                <span class="chip-lang">🇬🇧 EN</span>
+                <span class="chip-text">Capital of Maurya Empire</span>
+              </button>
+              <button class="quick-chip" data-prompt="भारत की राजधानी क्या है और इसका ऐतिहासिक महत्व क्या है?">
+                <span class="chip-lang">🇮🇳 HI</span>
+                <span class="chip-text">भारत की राजधानी और इतिहास</span>
+              </button>
+              <button class="quick-chip" data-prompt="রবীন্দ্রনাথ ঠাকুর কে ছিলেন এবং তিনি কোন পুরস্কার পেয়েছিলেন?">
+                <span class="chip-lang">🇧🇩 BN</span>
+                <span class="chip-text">রবীন্দ্রনাথ ঠাকুর ও নোবেল পুরস্কার</span>
+              </button>
+              <button class="quick-chip" data-prompt="தமிழ்நாட்டின் தலைநகரம் எது மற்றும் அதன் முக்கிய சிறப்புகள் என்ன?">
+                <span class="chip-lang">🇮🇳 TA</span>
+                <span class="chip-text">தமிழ்நாட்டின் தலைநகரம்</span>
+              </button>
+              <button class="quick-chip" data-prompt="ಕರ್ನಾಟಕದ ರಾಜಧಾನಿ ಯಾವುದು ಮತ್ತು ಅದರ ಇತಿಹಾಸವೇನು?">
+                <span class="chip-lang">🇮🇳 KN</span>
+                <span class="chip-text">ಕರ್ನಾಟಕದ ರಾಜಧಾನಿ</span>
+              </button>
+              <button class="quick-chip" data-prompt="महाराष्ट्राची राजधानी कोणती आहे आणि तिचे महत्त्व काय?">
+                <span class="chip-lang">🇮🇳 MR</span>
+                <span class="chip-text">महाराष्ट्राची राजधानी</span>
+              </button>
             </div>
-            <div class="weight-controls">
-              <label>Dense (FAISS): <span id="dense-val">0.8</span></label>
-              <input type="range" id="dense-slider" min="0" max="1" step="0.1" value="0.8">
-            </div>
-            <button id="submit-btn" class="btn btn-primary">
-              <span>Execute RAG Pipeline</span>
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
           </div>
         </div>
+
       </section>
 
-      <!-- Results Panel -->
-      <section class="card results-card" id="results-panel">
-        <div class="card-header">
-          <h2>Grounded Response</h2>
-          <div class="badge-group">
-            <span id="lang-badge" class="badge-lang">Language: --</span>
-            <span id="voice-badge" class="badge-voice">Voice: --</span>
-            <span id="grounding-badge" class="badge-grounding">Grounding: --</span>
-          </div>
+      <!-- Interactive Voice Visualizer Stage -->
+      <div id="visualizer-stage" class="visualizer-stage idle">
+        <div class="visualizer-orb-wrap">
+          <div class="visualizer-orb"></div>
+          <div class="visualizer-ripple ripple-1"></div>
+          <div class="visualizer-ripple ripple-2"></div>
         </div>
+        <!-- Real-Time Web Audio Reactive Waveform Canvas -->
+        <canvas id="audio-waveform-canvas" class="waveform-canvas" width="360" height="48"></canvas>
+        <div id="visualizer-text" class="visualizer-text">Ready to listen...</div>
+      </div>
 
-        <div class="answer-box">
-          <div id="answer-text" class="placeholder-text">Submit a query or spoken audio to generate a grounded multilingual answer.</div>
-        </div>
-
-        <!-- Latency Dashboard -->
-        <div class="latency-dashboard">
-          <div class="latency-header">
-            <h3>Latency Instrumentation</h3>
-            <div id="total-latency-badge" class="latency-pill">0.0 ms</div>
-          </div>
-
-          <div class="latency-grid" id="latency-grid">
-            <div class="latency-item"><span class="lbl">STT / Voice</span><span class="val" id="lat-stt">0.0 ms</span></div>
-            <div class="latency-item highlight"><span class="lbl">⚡ First Audio (TTFA)</span><span class="val" id="lat-first-audio">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">LLM TTFT (T1)</span><span class="val" id="lat-ttft">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Vector Search (FAISS)</span><span class="val" id="lat-vector">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Lexical Search (FTS5)</span><span class="val" id="lat-bm25">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Hybrid Fusion</span><span class="val" id="lat-fusion">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">LLM Generation Total</span><span class="val" id="lat-llm">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Grounding Check</span><span class="val" id="lat-grounding">0.0 ms</span></div>
-          </div>
-        </div>
-
-        <!-- Retrieved Sources -->
-        <div class="sources-section">
-          <h3>Retrieved Context Sources</h3>
-          <div id="sources-list" class="sources-list">
-            <div class="empty-sources">No retrieved sources yet.</div>
-          </div>
-        </div>
-      </section>
     </main>
+
+    <!-- Bottom Input Area (Voice-First Experience) -->
+    <footer class="bottom-bar">
+      <div class="input-panel-wrap">
+        
+        <!-- Live Floating Microphone Button -->
+        <div class="mic-button-wrap">
+          <button id="mic-trigger-btn" class="mic-trigger-btn" title="Speak to ARROHA (Click to Talk / Stop / Barge-in)" aria-label="Microphone Button">
+            <div class="mic-pulse-ring"></div>
+            <div class="mic-icon-inner">
+              <svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+                <line x1="8" y1="22" x2="16" y2="22"></line>
+              </svg>
+            </div>
+          </button>
+          
+          <!-- Instant Barge-In / Stop Button -->
+          <button id="stop-speech-btn" class="stop-speech-btn hidden" title="Interrupt & Stop AI Speech">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <rect x="5" y="5" width="14" height="14" rx="2"></rect>
+            </svg>
+            <span>Interrupt</span>
+          </button>
+        </div>
+
+        <!-- Integrated Chat Input Box -->
+        <div class="input-box-container">
+          <textarea 
+            id="text-query-input" 
+            class="text-query-input" 
+            placeholder="Ask ARROHA in any language or click the mic to speak..." 
+            rows="1"
+            aria-label="Ask ARROHA a question"
+          ></textarea>
+
+          <div class="input-controls-right">
+            <!-- Mode Toggle: Voice vs Text -->
+            <button id="mode-toggle-btn" class="mode-toggle-btn active" title="Toggle Real-Time Voice Synthesis">
+              <span class="mode-icon">🎙️</span>
+              <span class="mode-label">Voice ON</span>
+            </button>
+
+            <!-- Send Button -->
+            <button id="send-query-btn" class="send-query-btn" title="Send Query (Enter)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub-hint text -->
+        <div class="input-subtext">
+          <span>🌴 Hacker House Goa 2026</span> • <span>Press <kbd>Enter</kbd> to send, <kbd>Shift+Enter</kbd> for newline</span> • <span>Barge-in active</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Slide-over Developer Diagnostics Drawer -->
+    <aside id="diagnostics-drawer" class="diagnostics-drawer" aria-label="Developer Telemetry Drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span class="drawer-icon">⚡</span>
+          <h3>Real-Time Telemetry</h3>
+        </div>
+        <button id="close-drawer-btn" class="close-drawer-btn" title="Close Diagnostics">×</button>
+      </div>
+
+      <div class="drawer-content">
+        <!-- Target Badge -->
+        <div class="budget-status-card">
+          <div class="budget-title">Competition Target (&lt; 200 ms)</div>
+          <div id="budget-badge" class="budget-badge pass">⚡ VALIDATED PRODUCTION</div>
+          <p class="budget-desc">Speech synthesis starts concurrently on Chunk 1 while Qwen2.5-1.5B generates subsequent tokens.</p>
+        </div>
+
+        <!-- Latency Metrics Grid -->
+        <div class="diag-metrics-grid">
+          <div class="diag-card highlight">
+            <span class="diag-label">⚡ Time to First Audio (TTFA)</span>
+            <span id="diag-ttfa" class="diag-val accent-gold">0.0 ms</span>
+          </div>
+
+          <div class="diag-card highlight">
+            <span class="diag-label">⚡ LLM TTFT (T1)</span>
+            <span id="diag-ttft" class="diag-val accent-cyan">0.0 ms</span>
+          </div>
+
+          <div class="diag-card">
+            <span class="diag-label">Speech-to-Text (STT)</span>
+            <span id="diag-stt" class="diag-val">0.0 ms</span>
+          </div>
+
+          <div class="diag-card">
+            <span class="diag-label">FAISS Vector Search (50.4k)</span>
+            <span id="diag-vector" class="diag-val">0.0 ms</span>
+          </div>
+
+          <div class="diag-card">
+            <span class="diag-label">SQLite FTS5 Lexical</span>
+            <span id="diag-bm25" class="diag-val">0.0 ms</span>
+          </div>
+
+          <div class="diag-card">
+            <span class="diag-label">Hybrid Score Fusion</span>
+            <span id="diag-fusion" class="diag-val">0.0 ms</span>
+          </div>
+
+          <div class="diag-card">
+            <span class="diag-label">TTS Synthesis (Chunk 1)</span>
+            <span id="diag-tts" class="diag-val">0.0 ms</span>
+          </div>
+
+          <div class="diag-card">
+            <span class="diag-label">Full Pipeline Wall Time</span>
+            <span id="diag-total" class="diag-val">0.0 ms</span>
+          </div>
+        </div>
+
+        <!-- System Specs & Health -->
+        <div class="system-specs-card">
+          <h4>System Runtime Configuration</h4>
+          <div class="spec-row"><span>Model</span><strong>Qwen2.5-1.5B-Instruct Q4_K_M</strong></div>
+          <div class="spec-row"><span>Inference</span><strong>llama-server CUDA 12.4 (-ngl 99)</strong></div>
+          <div class="spec-row"><span>Corpus</span><strong>50,400 Chunks (MSMARCO-XI)</strong></div>
+          <div class="spec-row"><span>TTS Backend</span><strong id="spec-tts-backend">Local ONNX (< 16 ms)</strong></div>
+          <div class="spec-row"><span>Buffer Mode</span><strong>Adaptive BPE Word Boundaries</strong></div>
+          <div class="spec-row"><span>GPU Hardware</span><strong>RTX 4050 Laptop GPU (6GB)</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Drawer Backdrop -->
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
   </div>
 
+  <!-- Application Logic -->
   <script src="/static/app.js"></script>
 </body>
 </html>

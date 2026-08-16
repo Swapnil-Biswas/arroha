@@ -70,6 +70,7 @@ class StreamingVoicePipeline:
         retrieval_ms: float,
         llm_stream_generator: Callable[[], Any],
         session_id: str = "default",
+        sources: Optional[list[SourceDocument]] = None,
     ) -> Generator[VoiceStreamChunk, None, None]:
         """
         Yields real-time SSE event stream chunks:
@@ -86,6 +87,7 @@ class StreamingVoicePipeline:
             event="status",
             session_id=session_id,
             text="THINKING",
+            language=language,
         )
 
         text_queue: queue.Queue[Optional[dict[str, Any]]] = queue.Queue()
@@ -156,7 +158,7 @@ class StreamingVoicePipeline:
                     achunk = audio_queue.get_nowait()
                     if achunk is not None:
                         if t_first_audio_ns is None:
-                            t_first_audio_ns = achunk.created_at_ns or time.perf_counter_ns()
+                            t_first_audio_ns = achunk.created_at_ns if (achunk.created_at_ns and achunk.created_at_ns > 0) else time.perf_counter_ns()
                             yield VoiceStreamChunk(event="status", session_id=session_id, text="SPEAKING")
 
                         yield VoiceStreamChunk(
@@ -189,7 +191,7 @@ class StreamingVoicePipeline:
             if achunk is None:
                 break
             if t_first_audio_ns is None:
-                t_first_audio_ns = achunk.created_at_ns or time.perf_counter_ns()
+                t_first_audio_ns = achunk.created_at_ns if (achunk.created_at_ns and achunk.created_at_ns > 0) else time.perf_counter_ns()
                 yield VoiceStreamChunk(event="status", session_id=session_id, text="SPEAKING")
 
             yield VoiceStreamChunk(
@@ -226,6 +228,8 @@ class StreamingVoicePipeline:
             event="done",
             session_id=session_id,
             text="".join(full_tokens).strip(),
+            language=language,
+            sources=sources,
             latency=lat,
             is_final=True,
         )

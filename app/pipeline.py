@@ -320,6 +320,7 @@ class RAGPipeline:
             retrieval_ms=ret_ms,
             llm_stream_generator=stream_supplier,
             session_id=sid,
+            sources=sources,
         ):
             if event_chunk.latency:
                 event_chunk.latency.stt_ms = round(stt_ms, 2)

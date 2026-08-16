@@ -228,9 +228,11 @@ def run_benchmark() -> dict[str, Any]:
 
         t_end_ns = time.perf_counter_ns()
 
-        lat_metrics = done_pkt.get("latency", {}) if done_pkt else {}
-        server_first_audio_ms = lat_metrics.get("first_audio_latency_ms", (first_audio_ns - t0_ns) / 1e6 if first_audio_ns else 0.0)
-        lat_ttft = lat_metrics.get("llm_ttft_ms", (ttft_ns - t0_ns) / 1e6 if ttft_ns else 0.0)
+        lat_metrics = done_pkt.get("latency") if (done_pkt and isinstance(done_pkt.get("latency"), dict)) else {}
+        server_first_audio_ms = lat_metrics.get("first_audio_latency_ms")
+        if server_first_audio_ms is None or server_first_audio_ms <= 0.0:
+            server_first_audio_ms = (first_audio_ns - t0_ns) / 1e6 if first_audio_ns else 0.0
+        lat_ttft = lat_metrics.get("llm_ttft_ms") or ((ttft_ns - t0_ns) / 1e6 if ttft_ns else 0.0)
         lat_first_audio = server_first_audio_ms
         lat_total = (t_end_ns - t0_ns) / 1e6
 

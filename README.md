@@ -67,6 +67,23 @@ Because Chunk 1 provides ~2.5–4.0 seconds of spoken duration, and Qwen2.5-1.5B
 - **`app/voice/pipeline.py`**: Multi-threaded concurrent streaming voice orchestrator with thread-safe session cancellation.
 - **`app/voice/stt.py`**: Speech-to-Text engine supporting Whisper and high-speed audio processors.
 
+### Hacker House Goa 2026 Web Frontend (`app/static/`)
+
+The web UI provides a production-grade, ChatGPT-like conversational assistant themed in the vibrant aesthetic of **Hacker House Goa 2026** (Lush Tropical Green, Sunshine Gold, and Hibiscus Pink):
+
+- **Voice-First Experience:** Prominent floating glowing microphone button with instant click-to-talk, live waveform feedback, and auto speech recognition.
+- **Real-Time Token Streaming:** Progressive token-by-token emission with typing cursor and audio playback synchronization.
+- **Live Audio-Reactive Visualizer:** Powered by the Web Audio API (`AudioContext`, `AnalyserNode`) drawing dynamic frequency bins onto `<canvas>` reflecting actual speech playback.
+- **Interactive Voice States:**
+  - `READY`: Static glowing sunset orb.
+  - `LISTENING`: Pulsing hibiscus pink microphone ring and live audio capture.
+  - `THINKING`: Rotating tropical gradient orb during retrieval and synthesis.
+  - `SPEAKING`: Active multi-bar audio waveform and simultaneous text stream.
+  - `INTERRUPTED`: Immediate audio cutoff and smooth waveform collapse.
+- **Instantaneous Barge-In / Interruption:** Clicking the mic or Stop button while the assistant speaks halts audio playback immediately, sends `/voice/interrupt`, and switches to listening for the new query (<100ms perceived interruption).
+- **Expandable Grounded Evidence Accordion:** Collapsible source citations displaying retrieval score, passage text, and language tags.
+- **Developer Telemetry Drawer:** Real-time diagnostics panel displaying stage-by-stage latency (STT, FAISS, FTS5, Hybrid, TTFT, TTFA, and full pipeline).
+
 ---
 
 ## 3. Validated Production Benchmarks

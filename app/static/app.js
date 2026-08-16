@@ -1,461 +1,744 @@
-// HH Goa 2026 Voice RAG Frontend Client
-// Supports Real-Time Voice Streaming, Audio Queue Playback, and Barge-In Interruption
+/**
+ * ARROHA — Real-Time Streaming Multilingual Voice Assistant
+ * Hacker House Goa 2026 Edition
+ * Features:
+ * - Web Audio API Low-Latency Sequential Streaming Player
+ * - Audio-Reactive Waveform Canvas (AnalyserNode)
+ * - Instant Barge-in / Interruption (<100ms cancellation)
+ * - Server-Sent Events (SSE) Delta Token Streaming
+ * - 15-Language Router & Telemetry Instrumentation
+ */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const micBtn = document.getElementById('mic-btn');
-  const micText = document.getElementById('mic-text');
-  const interruptBtn = document.getElementById('interrupt-btn');
-  const voiceStateIndicator = document.getElementById('voice-state-indicator');
-  const voiceStateText = document.getElementById('voice-state-text');
+(() => {
+  'use strict';
 
-  const queryInput = document.getElementById('query-input');
-  const submitBtn = document.getElementById('submit-btn');
-  const denseSlider = document.getElementById('dense-slider');
-  const denseVal = document.getElementById('dense-val');
+  // State Management
+  const state = {
+    mode: 'voice', // 'voice' | 'text'
+    voiceState: 'ready', // 'ready' | 'listening' | 'thinking' | 'speaking' | 'interrupted' | 'error'
+    currentSessionId: null,
+    targetLanguage: 'auto',
+    activeAudioSource: null,
+    audioQueue: [],
+    isPlayingAudio: false,
+    audioContext: null,
+    analyserNode: null,
+    audioDataArray: null,
+    canvasCtx: null,
+    animFrameId: null,
+    mediaRecorder: null,
+    audioChunks: [],
+    speechRecognizer: null,
+    isRecording: false,
+    currentAssistantCard: null,
+    currentStreamTokens: [],
+    conversationHistory: [],
+  };
 
-  const answerText = document.getElementById('answer-text');
-  const langBadge = document.getElementById('lang-badge');
-  const voiceBadge = document.getElementById('voice-badge');
-  const groundingBadge = document.getElementById('grounding-badge');
-  const totalLatencyBadge = document.getElementById('total-latency-badge');
-  const sourcesList = document.getElementById('sources-list');
+  // DOM Elements
+  const DOM = {
+    voiceStatePill: document.getElementById('voice-state-pill'),
+    voiceStateLabel: document.getElementById('voice-state-label'),
+    ttfaQuickPill: document.getElementById('ttfa-quick-pill'),
+    ttfaQuickVal: document.getElementById('ttfa-quick-val'),
+    langSelect: document.getElementById('lang-select'),
+    newChatBtn: document.getElementById('new-chat-btn'),
+    debugToggleBtn: document.getElementById('debug-toggle-btn'),
+    chatFeed: document.getElementById('chat-feed'),
+    welcomeHero: document.getElementById('welcome-hero'),
+    visualizerStage: document.getElementById('visualizer-stage'),
+    visualizerText: document.getElementById('visualizer-text'),
+    waveformCanvas: document.getElementById('audio-waveform-canvas'),
+    micTriggerBtn: document.getElementById('mic-trigger-btn'),
+    stopSpeechBtn: document.getElementById('stop-speech-btn'),
+    textQueryInput: document.getElementById('text-query-input'),
+    modeToggleBtn: document.getElementById('mode-toggle-btn'),
+    sendQueryBtn: document.getElementById('send-query-btn'),
+    diagnosticsDrawer: document.getElementById('diagnostics-drawer'),
+    drawerBackdrop: document.getElementById('drawer-backdrop'),
+    closeDrawerBtn: document.getElementById('close-drawer-btn'),
+    quickChips: document.querySelectorAll('.quick-chip'),
+    
+    // Telemetry fields
+    diagTtfa: document.getElementById('diag-ttfa'),
+    diagTtft: document.getElementById('diag-ttft'),
+    diagStt: document.getElementById('diag-stt'),
+    diagVector: document.getElementById('diag-vector'),
+    diagBm25: document.getElementById('diag-bm25'),
+    diagFusion: document.getElementById('diag-fusion'),
+    diagTts: document.getElementById('diag-tts'),
+    diagTotal: document.getElementById('diag-total'),
+    budgetBadge: document.getElementById('budget-badge'),
+  };
 
-  const healthStatus = document.getElementById('health-status');
-  const healthText = document.getElementById('health-text');
-  const docsPill = document.getElementById('docs-pill');
-  const modelPill = document.getElementById('model-pill');
-
-  let mediaRecorder = null;
-  let audioChunks = [];
-  let isRecording = false;
-  let currentSessionId = 'sess_' + Math.random().toString(36).substring(2, 9);
-
-  // Audio Playback Queue State
-  let audioContext = null;
-  let audioQueue = [];
-  let isPlayingAudio = false;
-  let activeAudioSource = null;
-
-  // 1. Initial Health Check
-  fetchHealth();
-
-  async function fetchHealth() {
-    try {
-      const res = await fetch('/health');
-      if (res.ok) {
-        const data = await res.json();
-        healthText.textContent = `Online (${data.status})`;
-        healthStatus.querySelector('.status-dot').classList.add('active');
-        docsPill.textContent = `${data.total_indexed_documents} Indexed Chunks`;
-        modelPill.textContent = `${data.model_id} (${data.tts_backend})`;
+  // Initialize Web Audio API
+  function initAudioContext() {
+    if (!state.audioContext) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      state.audioContext = new AudioCtx({ sampleRate: 24000 });
+      state.analyserNode = state.audioContext.createAnalyser();
+      state.analyserNode.fftSize = 64;
+      state.analyserNode.smoothingTimeConstant = 0.8;
+      const bufferLength = state.analyserNode.frequencyBinCount;
+      state.audioDataArray = new Uint8Array(bufferLength);
+      
+      // Canvas setup
+      if (DOM.waveformCanvas) {
+        state.canvasCtx = DOM.waveformCanvas.getContext('2d');
       }
-    } catch (e) {
-      healthText.textContent = 'API Offline';
+    }
+    if (state.audioContext.state === 'suspended') {
+      state.audioContext.resume();
     }
   }
 
-  // 2. Slider listener
-  denseSlider.addEventListener('input', (e) => {
-    denseVal.textContent = parseFloat(e.target.value).toFixed(1);
-  });
+  // Draw Audio-Reactive Waveform on Canvas
+  function drawVisualizer() {
+    if (!state.canvasCtx || !DOM.waveformCanvas) return;
+    const canvas = DOM.waveformCanvas;
+    const ctx = state.canvasCtx;
+    const width = canvas.width;
+    const height = canvas.height;
 
-  // 3. Sample query buttons
-  document.querySelectorAll('.sample-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      queryInput.value = btn.getAttribute('data-query');
-      executeQuery();
-    });
-  });
+    state.animFrameId = requestAnimationFrame(drawVisualizer);
 
-  // 4. Submit & Enter keys
-  submitBtn.addEventListener('click', executeQuery);
-  queryInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      executeQuery();
-    }
-  });
+    if (state.voiceState === 'speaking' && state.analyserNode) {
+      state.analyserNode.getByteFrequencyData(state.audioDataArray);
+      ctx.clearRect(0, 0, width, height);
 
-  // 5. Interruption Button
-  interruptBtn.addEventListener('click', () => {
-    interruptPlayback();
-  });
+      const barCount = 28;
+      const barWidth = (width / barCount) - 3;
+      let x = 3;
 
-  function setVoiceState(state) {
-    voiceStateIndicator.className = `voice-state-indicator ${state.toLowerCase()}`;
-    voiceStateText.textContent = state;
+      for (let i = 0; i < barCount; i++) {
+        const binIndex = Math.floor((i / barCount) * state.audioDataArray.length);
+        const value = state.audioDataArray[binIndex] || 0;
+        const percent = value / 255;
+        const barHeight = Math.max(4, percent * height * 0.85);
 
-    if (state === 'SPEAKING') {
-      interruptBtn.classList.remove('hidden');
-    } else if (state === 'IDLE' || state === 'READY' || state === 'DONE') {
-      interruptBtn.classList.add('hidden');
-    }
-  }
+        // Gradient from Gold to Emerald to Hibiscus Pink
+        const grad = ctx.createLinearGradient(0, height - barHeight, 0, height);
+        grad.addColorStop(0, '#ffdd00');
+        grad.addColorStop(0.5, '#10b981');
+        grad.addColorStop(1, '#ff007f');
 
-  function getSelectedMode() {
-    const selected = document.querySelector('input[name="rag-mode"]:checked');
-    return selected ? selected.value : 'voice';
-  }
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, (height - barHeight) / 2, barWidth, barHeight, 3);
+        ctx.fill();
 
-  // 6. Text Query Execution
-  async function executeQuery() {
-    const query = queryInput.value.trim();
-    if (!query) return;
-
-    interruptPlayback();
-    setVoiceState('THINKING');
-    setLoading(true);
-    answerText.textContent = '';
-    answerText.className = '';
-
-    const mode = getSelectedMode();
-    const denseWeight = parseFloat(denseSlider.value);
-
-    try {
-      const res = await fetch('/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: query,
-          dense_weight: denseWeight,
-          bm25_weight: 1.0 - denseWeight,
-          include_debug: true,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Server error');
+        x += barWidth + 3;
       }
-
-      const data = await res.json();
-      renderResponse(data);
-      setVoiceState('DONE');
-    } catch (err) {
-      answerText.textContent = `Error: ${err.message}`;
-      answerText.className = 'error-text';
-      setVoiceState('READY');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // 7. Voice Recording
-  micBtn.addEventListener('click', async () => {
-    if (!isRecording) {
-      interruptPlayback();
-      startRecording();
+    } else if (state.voiceState === 'listening') {
+      // Gentle animated sine wave for listening
+      ctx.clearRect(0, 0, width, height);
+      const time = Date.now() * 0.005;
+      ctx.strokeStyle = '#ff007f';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let x = 0; x < width; x += 4) {
+        const y = height / 2 + Math.sin(x * 0.05 + time) * 8 * Math.sin(time * 0.5);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
     } else {
-      stopRecording();
+      // Idle / Minimal baseline
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
     }
-  });
+  }
 
-  async function startRecording() {
+  // Set Global UI Voice State
+  function setVoiceState(newState, labelOverride = null) {
+    state.voiceState = newState;
+    const pill = DOM.voiceStatePill;
+    const label = DOM.voiceStateLabel;
+    const stage = DOM.visualizerStage;
+    const vText = DOM.visualizerText;
+    const micBtn = DOM.micTriggerBtn;
+    const stopBtn = DOM.stopSpeechBtn;
+
+    // Reset classes
+    pill.className = 'state-pill';
+    stage.className = 'visualizer-stage';
+    micBtn.classList.remove('listening');
+
+    switch (newState) {
+      case 'listening':
+        pill.classList.add('state-listening');
+        label.textContent = 'LISTENING...';
+        stage.classList.add('listening', 'active');
+        vText.textContent = 'Listening to your speech...';
+        micBtn.classList.add('listening');
+        stopBtn.classList.add('hidden');
+        break;
+
+      case 'thinking':
+        pill.classList.add('state-thinking');
+        label.textContent = 'THINKING...';
+        stage.classList.add('thinking', 'active');
+        vText.textContent = 'Searching 50,400 chunks & synthesizing...';
+        stopBtn.classList.add('hidden');
+        break;
+
+      case 'speaking':
+        pill.classList.add('state-speaking');
+        label.textContent = 'SPEAKING';
+        stage.classList.add('speaking', 'active');
+        vText.textContent = 'Streaming spoken response...';
+        stopBtn.classList.remove('hidden');
+        break;
+
+      case 'interrupted':
+        pill.classList.add('state-interrupted');
+        label.textContent = 'INTERRUPTED';
+        stage.classList.add('idle');
+        vText.textContent = 'Speech halted (Barge-in triggered)';
+        stopBtn.classList.add('hidden');
+        setTimeout(() => {
+          if (state.voiceState === 'interrupted') setVoiceState('ready');
+        }, 1200);
+        break;
+
+      case 'ready':
+      default:
+        pill.classList.add('state-ready');
+        label.textContent = labelOverride || 'READY';
+        stage.classList.add('idle');
+        vText.textContent = 'Click microphone or type below';
+        stopBtn.classList.add('hidden');
+        break;
+    }
+  }
+
+  // Sequential Streaming Audio Playback Queue
+  async function enqueueAudioChunk(base64Data, chunkIndex) {
+    if (!base64Data) return;
+    initAudioContext();
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunks = [];
-      mediaRecorder = new MediaRecorder(stream);
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        await handleVoiceBlob(audioBlob);
-        stream.getTracks().forEach(t => t.stop());
-      };
-
-      mediaRecorder.start();
-      isRecording = true;
-      micBtn.classList.add('recording');
-      micText.textContent = 'Listening... Click to Stop';
-      setVoiceState('LISTENING');
-    } catch (err) {
-      alert('Microphone access error: ' + err.message);
-      setVoiceState('READY');
-    }
-  }
-
-  function stopRecording() {
-    if (mediaRecorder && isRecording) {
-      mediaRecorder.stop();
-      isRecording = false;
-      micBtn.classList.remove('recording');
-      micText.textContent = 'Hold or Click to Speak';
-    }
-  }
-
-  async function handleVoiceBlob(blob) {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    reader.onloadend = async () => {
-      const base64Data = reader.result.split(',')[1];
-      const mode = getSelectedMode();
-
-      if (mode === 'voice') {
-        await streamVoiceQuery(base64Data);
-      } else {
-        await sendVoiceJson(base64Data);
+      const binaryString = atob(base64Data);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
-    };
+
+      // Convert 16-bit PCM (24kHz Mono) or WAV to AudioBuffer
+      let audioBuffer;
+      if (binaryString.startsWith('RIFF')) {
+        audioBuffer = await state.audioContext.decodeAudioData(bytes.buffer);
+      } else {
+        // Raw 16-bit signed PCM 24000 Hz
+        const int16 = new Int16Array(bytes.buffer);
+        const float32 = new Float32Array(int16.length);
+        for (let i = 0; i < int16.length; i++) {
+          float32[i] = int16[i] / 32768.0;
+        }
+        audioBuffer = state.audioContext.createBuffer(1, float32.length, 24000);
+        audioBuffer.getChannelData(0).set(float32);
+      }
+
+      state.audioQueue.push({ buffer: audioBuffer, chunkIndex });
+      if (!state.isPlayingAudio) {
+        playNextAudioInQueue();
+      }
+    } catch (err) {
+      console.warn('Audio decoding error:', err);
+    }
   }
 
-  // 8. Streaming Voice SSE Execution
-  async function streamVoiceQuery(base64Audio) {
-    currentSessionId = 'sess_' + Math.random().toString(36).substring(2, 9);
-    setVoiceState('THINKING');
-    answerText.textContent = '';
-    answerText.className = '';
-    audioQueue = [];
+  function playNextAudioInQueue() {
+    if (state.audioQueue.length === 0) {
+      state.isPlayingAudio = false;
+      if (state.voiceState === 'speaking') {
+        setVoiceState('ready');
+      }
+      return;
+    }
+
+    state.isPlayingAudio = true;
+    setVoiceState('speaking');
+
+    const item = state.audioQueue.shift();
+    const source = state.audioContext.createBufferSource();
+    source.buffer = item.buffer;
+
+    // Connect to AnalyserNode for reactive visualizer, then to Destination (Speakers)
+    source.connect(state.analyserNode);
+    state.analyserNode.connect(state.audioContext.destination);
+
+    state.activeAudioSource = source;
+
+    source.onended = () => {
+      state.activeAudioSource = null;
+      playNextAudioInQueue();
+    };
+
+    source.start(0);
+  }
+
+  // Instant Barge-In / Interruption Handler
+  async function triggerBargeIn() {
+    console.log('[Barge-in] Triggering immediate audio cancellation...');
+    if (state.activeAudioSource) {
+      try {
+        state.activeAudioSource.stop();
+      } catch (e) {}
+      state.activeAudioSource = null;
+    }
+    state.audioQueue = [];
+    state.isPlayingAudio = false;
+
+    if (state.currentSessionId) {
+      try {
+        fetch(`/voice/interrupt?session_id=${state.currentSessionId}`, { method: 'POST' });
+      } catch (e) {}
+    }
+
+    setVoiceState('interrupted');
+  }
+
+  // Message Card UI Rendering
+  function appendUserMessage(text, isVoice = false) {
+    if (DOM.welcomeHero) DOM.welcomeHero.style.display = 'none';
+
+    const card = document.createElement('div');
+    card.className = 'message-card user-msg';
+    
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    card.innerHTML = `
+      <div class="user-bubble">
+        <div class="user-text">${escapeHtml(text)}</div>
+      </div>
+      <div class="user-meta">
+        ${isVoice ? '<span class="voice-badge-icon">🎙️ Spoken Voice</span> • ' : ''}
+        <span>${timeStr}</span>
+      </div>
+    `;
+    DOM.chatFeed.appendChild(card);
+    DOM.chatFeed.scrollTop = DOM.chatFeed.scrollHeight;
+  }
+
+  function createAssistantCard() {
+    if (DOM.welcomeHero) DOM.welcomeHero.style.display = 'none';
+
+    const card = document.createElement('div');
+    card.className = 'message-card assistant-msg';
+    card.innerHTML = `
+      <div class="assistant-bubble-wrap">
+        <div class="assistant-avatar">A</div>
+        <div class="assistant-content-card">
+          <div class="assistant-text-body"><span class="streaming-text"></span><span class="streaming-cursor"></span></div>
+          <div class="sources-accordion hidden">
+            <button class="sources-toggle-btn">
+              <span>📚 View Grounded Evidence Sources (0)</span>
+            </button>
+            <div class="sources-drawer-list hidden"></div>
+          </div>
+          <div class="assistant-footer">
+            <div class="footer-badges">
+              <span class="badge-ttfa-live">⚡ TTFA: --</span>
+              <span class="badge-lang-tag">Lang: --</span>
+            </div>
+            <div class="footer-actions">
+              <button class="msg-action-btn copy-btn" title="Copy Answer">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    DOM.chatFeed.appendChild(card);
+    DOM.chatFeed.scrollTop = DOM.chatFeed.scrollHeight;
+
+    // Attach copy event
+    const copyBtn = card.querySelector('.copy-btn');
+    copyBtn.addEventListener('click', () => {
+      const text = card.querySelector('.streaming-text').innerText;
+      navigator.clipboard.writeText(text);
+      copyBtn.textContent = '✅ Copied!';
+      setTimeout(() => (copyBtn.textContent = '📋 Copy'), 2000);
+    });
+
+    // Attach sources toggle event
+    const sourcesBtn = card.querySelector('.sources-toggle-btn');
+    const sourcesList = card.querySelector('.sources-drawer-list');
+    sourcesBtn.addEventListener('click', () => {
+      sourcesList.classList.toggle('hidden');
+    });
+
+    state.currentAssistantCard = card;
+    state.currentStreamTokens = [];
+    return card;
+  }
+
+  function appendStreamToken(token) {
+    if (!state.currentAssistantCard) return;
+    state.currentStreamTokens.push(token);
+    const span = state.currentAssistantCard.querySelector('.streaming-text');
+    if (span) {
+      span.textContent = state.currentStreamTokens.join('');
+      DOM.chatFeed.scrollTop = DOM.chatFeed.scrollHeight;
+    }
+  }
+
+  function finalizeAssistantCard(doneData) {
+    if (!state.currentAssistantCard) return;
+    const card = state.currentAssistantCard;
+    const cursor = card.querySelector('.streaming-cursor');
+    if (cursor) cursor.remove();
+
+    const ttfaBadge = card.querySelector('.badge-ttfa-live');
+    const langBadge = card.querySelector('.badge-lang-tag');
+
+    if (doneData.latency && doneData.latency.first_audio_latency_ms) {
+      const ttfa = doneData.latency.first_audio_latency_ms;
+      ttfaBadge.textContent = `⚡ TTFA: ${ttfa} ms`;
+      DOM.ttfaQuickVal.textContent = `${ttfa} ms`;
+    }
+
+    if (doneData.language) {
+      langBadge.textContent = `Lang: ${doneData.language.toUpperCase()}`;
+    }
+
+    // Populate Sources if available
+    if (doneData.sources && doneData.sources.length > 0) {
+      const acc = card.querySelector('.sources-accordion');
+      acc.classList.remove('hidden');
+      acc.querySelector('.sources-toggle-btn span').textContent = `📚 View Grounded Evidence Sources (${doneData.sources.length})`;
+      const list = card.querySelector('.sources-drawer-list');
+      list.innerHTML = doneData.sources
+        .map(
+          (s, idx) => `
+        <div class="source-item-card">
+          <div class="source-item-header">
+            <span>Source #${idx + 1} (${(s.language || 'en').toUpperCase()})</span>
+            <span>Score: ${(s.score || 1.0).toFixed(3)}</span>
+          </div>
+          <div>${escapeHtml(s.text || '')}</div>
+        </div>
+      `
+        )
+        .join('');
+    }
+
+    // Update Diagnostics Drawer
+    if (doneData.latency) {
+      updateDiagnostics(doneData.latency);
+    }
+  }
+
+  function updateDiagnostics(lat) {
+    if (!lat) return;
+    if (DOM.diagTtfa) DOM.diagTtfa.textContent = `${lat.first_audio_latency_ms || 0} ms`;
+    if (DOM.diagTtft) DOM.diagTtft.textContent = `${lat.llm_ttft_ms || 0} ms`;
+    if (DOM.diagStt) DOM.diagStt.textContent = `${lat.stt_ms || 0} ms`;
+    if (DOM.diagVector) DOM.diagVector.textContent = `${lat.vector_retrieval_ms || 0} ms`;
+    if (DOM.diagBm25) DOM.diagBm25.textContent = `${lat.bm25_retrieval_ms || 0} ms`;
+    if (DOM.diagFusion) DOM.diagFusion.textContent = `${lat.hybrid_fusion_ms || 0} ms`;
+    if (DOM.diagTts) DOM.diagTts.textContent = `${lat.tts_first_chunk_ms || 0} ms`;
+    if (DOM.diagTotal) DOM.diagTotal.textContent = `${lat.total_ms || 0} ms`;
+
+    if (DOM.budgetBadge) {
+      if ((lat.first_audio_latency_ms || 0) <= 200.0) {
+        DOM.budgetBadge.className = 'budget-badge pass';
+        DOM.budgetBadge.textContent = '⚡ PASS (< 200 ms TARGET ACHIEVED)';
+      } else {
+        DOM.budgetBadge.className = 'budget-badge fail';
+        DOM.budgetBadge.textContent = '⚠️ TARGET MISSED';
+      }
+    }
+  }
+
+  // Execute Voice Query Stream via SSE
+  async function executeStreamingVoiceQuery(queryText, audioBase64 = null, isVoiceInput = false) {
+    initAudioContext();
+    const sessionId = 'sess_' + Date.now();
+    state.currentSessionId = sessionId;
+
+    appendUserMessage(queryText || 'Voice Query Payload', isVoiceInput);
+    createAssistantCard();
+    setVoiceState('thinking');
+
+    const selectedLang = DOM.langSelect.value === 'auto' ? null : DOM.langSelect.value;
+    const reqBody = {
+      query: queryText,
+      audio_base64: audioBase64,
+      language: selectedLang,
+      mode: state.mode,
+      stream: true,
+      session_id: sessionId,
+    };
 
     try {
-      const denseWeight = parseFloat(denseSlider.value);
-      const payload = {
-        audio_base64: base64Audio,
-        audio_format: 'wav',
-        dense_weight: denseWeight,
-        session_id: currentSessionId,
-        stream: true,
-        mode: 'voice',
-      };
-
       const response = await fetch('/voice/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(reqBody),
       });
 
       if (!response.ok) {
-        throw new Error('Streaming connection failed.');
+        throw new Error(`HTTP error ${response.status}`);
       }
 
       const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
+      const decoder = new TextDecoder();
       let buffer = '';
 
       while (true) {
-        const { done, value } = await reader.read();
+        const { value, done } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const events = buffer.split('\n\n');
-        buffer = events.pop();
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop(); // Keep last partial chunk
 
-        for (const evt of events) {
-          if (!evt.trim()) continue;
-          const lines = evt.split('\n');
-          let eventName = '';
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          let eventType = 'message';
           let dataStr = '';
 
-          for (const line of lines) {
-            if (line.startsWith('event: ')) eventName = line.replace('event: ', '').trim();
-            if (line.startsWith('data: ')) dataStr = line.replace('data: ', '').trim();
+          for (const rawLine of line.split('\n')) {
+            if (rawLine.startsWith('event: ')) {
+              eventType = rawLine.substring(7).trim();
+            } else if (rawLine.startsWith('data: ')) {
+              dataStr = rawLine.substring(6).trim();
+            }
           }
 
           if (dataStr) {
             try {
               const data = JSON.parse(dataStr);
-              handleStreamEvent(eventName, data);
-            } catch (e) {
-              console.warn('SSE parse error:', e);
+              handleStreamChunk(eventType, data);
+            } catch (err) {
+              console.warn('Malformed SSE data packet:', dataStr);
             }
           }
         }
       }
-    } catch (err) {
-      answerText.textContent = `Voice Error: ${err.message}`;
-      setVoiceState('READY');
+    } catch (error) {
+      console.error('Streaming request failed:', error);
+      setVoiceState('ready', 'ERROR');
+      if (state.currentAssistantCard) {
+        appendStreamToken(`\n[Connection Error: ${error.message}]`);
+      }
     }
   }
 
-  function handleStreamEvent(event, data) {
+  function handleStreamChunk(event, data) {
+    if (data.session_id && data.session_id !== state.currentSessionId) {
+      return; // Ignore older session chunks
+    }
+
     if (event === 'status') {
-      setVoiceState(data.text);
-    } else if (event === 'transcript') {
-      queryInput.value = data.text;
+      if (data.text === 'THINKING') setVoiceState('thinking');
+      else if (data.text === 'SPEAKING') setVoiceState('speaking');
+      else if (data.text === 'INTERRUPTED') setVoiceState('interrupted');
     } else if (event === 'token') {
       if (data.delta) {
-        answerText.textContent += data.delta;
+        appendStreamToken(data.delta);
       }
     } else if (event === 'audio_chunk') {
-      setVoiceState('SPEAKING');
-      if (data.audio_base64) {
-        enqueueAudioChunk(data.audio_base64);
+      if (data.audio_base64 && state.mode === 'voice') {
+        enqueueAudioChunk(data.audio_base64, data.chunk_index);
       }
     } else if (event === 'done') {
-      if (data.latency) {
-        updateLatencyGrid(data.latency);
-      }
-      if (!isPlayingAudio && audioQueue.length === 0) {
-        setVoiceState('DONE');
+      finalizeAssistantCard(data);
+      if (!state.isPlayingAudio) {
+        setVoiceState('ready');
       }
     } else if (event === 'error') {
-      answerText.textContent = `Error: ${data.text}`;
-      setVoiceState('READY');
-    }
-  }
-
-  async function sendVoiceJson(base64Audio) {
-    setLoading(true);
-    setVoiceState('THINKING');
-    try {
-      const res = await fetch('/voice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audio_base64: base64Audio,
-          audio_format: 'wav',
-          mode: 'text',
-        }),
-      });
-      const data = await res.json();
-      renderResponse(data);
-      setVoiceState('DONE');
-    } catch (err) {
-      answerText.textContent = `Voice error: ${err.message}`;
-      setVoiceState('READY');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // 9. Web Audio Queue Player
-  function getAudioContext() {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
-    }
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-    return audioContext;
-  }
-
-  function enqueueAudioChunk(base64Pcm) {
-    audioQueue.push(base64Pcm);
-    if (!isPlayingAudio) {
-      playNextAudioChunk();
-    }
-  }
-
-  async function playNextAudioChunk() {
-    if (audioQueue.length === 0) {
-      isPlayingAudio = false;
-      setVoiceState('DONE');
-      return;
-    }
-
-    isPlayingAudio = true;
-    const b64 = audioQueue.shift();
-    const ctx = getAudioContext();
-
-    try {
-      const rawBytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-      const int16Array = new Int16Array(rawBytes.buffer);
-      const float32Array = new Float32Array(int16Array.length);
-
-      for (let i = 0; i < int16Array.length; i++) {
-        float32Array[i] = int16Array[i] / 32768.0;
+      console.error('Backend voice error:', data.text);
+      setVoiceState('ready', 'ERROR');
+      if (state.currentAssistantCard) {
+        appendStreamToken(`\n[Error: ${data.text}]`);
       }
+    }
+  }
 
-      const audioBuffer = ctx.createBuffer(1, float32Array.length, 24000);
-      audioBuffer.getChannelData(0).set(float32Array);
+  // Voice Recording & Speech Recognition Setup
+  function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      state.speechRecognizer = new SpeechRecognition();
+      state.speechRecognizer.continuous = false;
+      state.speechRecognizer.interimResults = false;
 
-      activeAudioSource = ctx.createBufferSource();
-      activeAudioSource.buffer = audioBuffer;
-      activeAudioSource.connect(ctx.destination);
-
-      activeAudioSource.onended = () => {
-        playNextAudioChunk();
+      state.speechRecognizer.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        console.log('[STT] Recognized speech transcript:', transcript);
+        if (transcript.trim()) {
+          executeStreamingVoiceQuery(transcript.trim(), null, true);
+        }
       };
 
-      activeAudioSource.start();
-    } catch (e) {
-      console.warn('Audio decode/playback note:', e);
-      playNextAudioChunk();
+      state.speechRecognizer.onerror = (err) => {
+        console.warn('Web Speech STT error:', err);
+        setVoiceState('ready');
+      };
+
+      state.speechRecognizer.onend = () => {
+        state.isRecording = false;
+        if (state.voiceState === 'listening') {
+          setVoiceState('thinking');
+        }
+      };
     }
   }
 
-  // 10. Interruption / Barge-in
-  function interruptPlayback() {
-    if (activeAudioSource) {
+  async function startMicrophoneRecording() {
+    // If AI is speaking, clicking mic triggers instant barge-in!
+    if (state.isPlayingAudio || state.voiceState === 'speaking') {
+      await triggerBargeIn();
+    }
+
+    initAudioContext();
+    initSpeechRecognition();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      state.mediaRecorder = new MediaRecorder(stream);
+      state.audioChunks = [];
+
+      state.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) state.audioChunks.push(e.data);
+      };
+
+      state.mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Audio = reader.result.split(',')[1];
+          if (!state.speechRecognizer) {
+            executeStreamingVoiceQuery('Spoken Audio', base64Audio, true);
+          }
+        };
+        reader.readAsDataURL(audioBlob);
+      };
+
+      state.mediaRecorder.start();
+      state.isRecording = true;
+      setVoiceState('listening');
+
+      if (state.speechRecognizer) {
+        const targetLang = DOM.langSelect.value;
+        state.speechRecognizer.lang = targetLang === 'auto' ? 'en-IN' : targetLang;
+        state.speechRecognizer.start();
+      }
+    } catch (err) {
+      console.warn('Microphone access denied / unavailable:', err);
+      alert('Microphone access is required for real-time speech input.');
+      setVoiceState('ready');
+    }
+  }
+
+  function stopMicrophoneRecording() {
+    if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
+      state.mediaRecorder.stop();
+    }
+    if (state.speechRecognizer) {
       try {
-        activeAudioSource.stop();
+        state.speechRecognizer.stop();
       } catch (e) {}
-      activeAudioSource = null;
     }
-    audioQueue = [];
-    isPlayingAudio = false;
-    setVoiceState('INTERRUPTED');
-
-    // Notify server to cancel active TTS / generation
-    fetch(`/voice/interrupt?session_id=${currentSessionId}`, { method: 'POST' }).catch(() => {});
-    setTimeout(() => {
-      setVoiceState('READY');
-    }, 1200);
+    state.isRecording = false;
   }
 
-  // 11. Render Utilities
-  function renderResponse(data) {
-    answerText.textContent = data.answer;
-    langBadge.textContent = `Language: ${data.detected_language || 'Unknown'}`;
-    if (voiceBadge && data.voice_type) {
-      voiceBadge.textContent = `Voice: ${data.voice_type}`;
-    }
+  // Event Listeners
+  function setupEventListeners() {
+    // Microphone Button Click
+    DOM.micTriggerBtn.addEventListener('click', () => {
+      if (state.isRecording) {
+        stopMicrophoneRecording();
+      } else {
+        startMicrophoneRecording();
+      }
+    });
 
-    if (data.grounding) {
-      groundingBadge.textContent = data.grounding.is_grounded ? 'Grounded (Verified)' : 'Ungrounded / Refusal';
-      groundingBadge.className = data.grounding.is_grounded ? 'badge-grounding grounded' : 'badge-grounding ungrounded';
-    }
+    // Instant Interrupt / Stop Speech Button
+    DOM.stopSpeechBtn.addEventListener('click', () => {
+      triggerBargeIn();
+    });
 
-    if (data.latency) {
-      updateLatencyGrid(data.latency);
-    }
+    // Send Query Button Click
+    DOM.sendQueryBtn.addEventListener('click', () => {
+      const text = DOM.textQueryInput.value.trim();
+      if (text) {
+        DOM.textQueryInput.value = '';
+        executeStreamingVoiceQuery(text, null, false);
+      }
+    });
 
-    if (data.sources && data.sources.length > 0) {
-      sourcesList.innerHTML = data.sources.map((s, idx) => `
-        <div class="source-item">
-          <div class="source-header">
-            <span class="source-tag">#${idx + 1} (${s.language})</span>
-            <span class="source-score">Score: ${(s.score * 100).toFixed(1)}%</span>
-          </div>
-          <div class="source-body">${escapeHtml(s.text)}</div>
-        </div>
-      `).join('');
-    } else {
-      sourcesList.innerHTML = '<div class="empty-sources">No source passages retrieved.</div>';
-    }
-  }
+    // Text Input Keydown (Enter to send)
+    DOM.textQueryInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const text = DOM.textQueryInput.value.trim();
+        if (text) {
+          DOM.textQueryInput.value = '';
+          executeStreamingVoiceQuery(text, null, false);
+        }
+      }
+    });
 
-  function updateLatencyGrid(lat) {
-    totalLatencyBadge.textContent = `${lat.total_ms.toFixed(1)} ms`;
-    totalLatencyBadge.className = lat.total_ms <= 200.0 ? 'latency-pill fast' : 'latency-pill slow';
+    // Mode Toggle (Voice vs Text)
+    DOM.modeToggleBtn.addEventListener('click', () => {
+      if (state.mode === 'voice') {
+        state.mode = 'text';
+        DOM.modeToggleBtn.classList.remove('active');
+        DOM.modeToggleBtn.querySelector('.mode-icon').textContent = '📝';
+        DOM.modeToggleBtn.querySelector('.mode-label').textContent = 'Text Only';
+      } else {
+        state.mode = 'voice';
+        DOM.modeToggleBtn.classList.add('active');
+        DOM.modeToggleBtn.querySelector('.mode-icon').textContent = '🎙️';
+        DOM.modeToggleBtn.querySelector('.mode-label').textContent = 'Voice ON';
+      }
+    });
 
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = `${val.toFixed(1)} ms`;
-    };
+    // Quick Prompt Chips
+    DOM.quickChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const prompt = chip.dataset.prompt;
+        if (prompt) {
+          executeStreamingVoiceQuery(prompt, null, false);
+        }
+      });
+    });
 
-    setVal('lat-stt', lat.stt_ms || 0.0);
-    setVal('lat-first-audio', lat.first_audio_latency_ms || 0.0);
-    setVal('lat-ttft', lat.llm_ttft_ms || 0.0);
-    setVal('lat-vector', lat.vector_retrieval_ms || 0.0);
-    setVal('lat-bm25', lat.bm25_retrieval_ms || 0.0);
-    setVal('lat-fusion', lat.hybrid_fusion_ms || 0.0);
-    setVal('lat-llm', lat.llm_generation_ms || 0.0);
-    setVal('lat-grounding', lat.grounding_check_ms || 0.0);
-  }
+    // Diagnostics Drawer Toggle
+    DOM.debugToggleBtn.addEventListener('click', () => {
+      DOM.diagnosticsDrawer.classList.toggle('open');
+      DOM.drawerBackdrop.classList.toggle('open');
+    });
 
-  function setLoading(loading) {
-    if (loading) {
-      submitBtn.disabled = true;
-      submitBtn.classList.add('loading');
-    } else {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('loading');
-    }
+    DOM.closeDrawerBtn.addEventListener('click', () => {
+      DOM.diagnosticsDrawer.classList.remove('open');
+      DOM.drawerBackdrop.classList.remove('open');
+    });
+
+    DOM.drawerBackdrop.addEventListener('click', () => {
+      DOM.diagnosticsDrawer.classList.remove('open');
+      DOM.drawerBackdrop.classList.remove('open');
+    });
+
+    // New Chat Button
+    DOM.newChatBtn.addEventListener('click', () => {
+      triggerBargeIn();
+      DOM.chatFeed.innerHTML = '';
+      if (DOM.welcomeHero) {
+        DOM.welcomeHero.style.display = 'block';
+        DOM.chatFeed.appendChild(DOM.welcomeHero);
+      }
+      setVoiceState('ready');
+    });
   }
 
   function escapeHtml(text) {
@@ -463,4 +746,15 @@ document.addEventListener('DOMContentLoaded', () => {
     div.textContent = text;
     return div.innerHTML;
   }
-});
+
+  // Application Entry Point
+  function init() {
+    setupEventListeners();
+    initAudioContext();
+    drawVisualizer();
+    setVoiceState('ready');
+    console.log('🌴 ARROHA Real-Time Streaming Voice Assistant initialized (HH Goa 2026).');
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+})();

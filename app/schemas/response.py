@@ -64,6 +64,8 @@ class VoiceStreamChunk(BaseModel):
     audio_duration_ms: Optional[float] = None
     synthesis_latency_ms: Optional[float] = None
     is_final: bool = False
+    language: Optional[str] = None
+    sources: Optional[list[SourceDocument]] = None
     latency: Optional[LatencyBreakdown] = None
 
 
