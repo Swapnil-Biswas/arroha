@@ -9,30 +9,28 @@ ARROHA is a high-performance, real-time, multilingual Retrieval-Augmented Genera
 
 ```mermaid
 flowchart TD
-    A[User Voice Input / Spoken Audio] --> B[Speech-to-Text Engine\nWhisper / High-Speed STT]
+    A[User Voice Input / Spoken Audio] --> B[Speech-to-Text Engine\nfaster-whisper]
     B --> C[User Query & Detected Language]
     C --> D[Input Guardrails & Sanitization]
     
     D --> E1[Multilingual Embedder\nparaphrase-multilingual-MiniLM-L12-v2]
     D --> E2[Multilingual Tokenizer]
     
-    E1 --> F1[Dense Vector Search\nFAISS IndexFlatIP (50.4k chunks)]
+    E1 --> F1[Dense Vector Search\nFAISS IndexFlatIP]
     E2 --> F2[Sparse Lexical Search\nSQLite FTS5 BM25]
     
     F1 --> G[Candidate Fusion & Score Normalization\nDense: 0.8 + BM25: 0.2]
     F2 --> G
     
-    G --> H[Top-K Grounded Source Context]
-    H --> I[Grounded Prompt Assembly]
+    G --> H[Top-K Candidate Sources & Context]
+    H --> I[Optional Lightweight Reranker]
     
-    I --> J[Qwen2.5-1.5B-Instruct Q4_K_M\nllama-server CUDA 12.4 Streaming]
+    I --> J[Grounded Prompt Assembly]
+    J --> K[Qwen2.5-1.5B-Instruct Q4_K_M\nllama-server CUDA 12.4]
     
-    J -->|Delta Tokens| K[Adaptive Streaming Text Buffer\nBPE Leading-Space Boundaries]
-    K -->|Chunk 1 Eager (3-4 words)| L[Local ONNX Streaming Synthesizer\nSub-16ms Acoustic Synthesis]
-    K -->|Subsequent Clauses| L
-    
-    L -->|16-bit 24kHz PCM Chunks| M[Web Audio Queue & Streaming Playback]
-    M --> N[Real-Time Conversational Audio Stream]
+    K --> L[Grounding & Hallucination Guardrail]
+    L --> M[Output Sanitization & Structured Response]
+    M --> N[Client UI / Audio Synthesis]
 ```
 
 ---
@@ -41,26 +39,14 @@ flowchart TD
 
 Traditional voice RAG systems suffer from a sequential **generate-then-speak** latency barrier (often >1,200 ms). ARROHA overcomes this with a **concurrent producer-consumer streaming architecture**:
 
-```
-[User Speech] 
-      │
-      ▼
-[STT Layer] 
-      │ Transcribed Text
-      ▼
-[50,400-Chunk Hybrid Retrieval] (FAISS + SQLite FTS5 ~18 ms)
-      │ Top-5 Grounded Sources
-      ▼
-[Qwen2.5-1.5B Streaming Generation] (llama-server CUDA ~103 ms TTFT)
-      │ Incremental Delta Tokens
-      ▼
-[Adaptive Text Buffering] (Eager Chunk 1 at 3-4 words / clause boundary)
-      │ Speech-Ready Word Chunks
-      ▼
-[Local ONNX Streaming Synthesizer] (~15.8 ms synthesis latency)
-      │ 24kHz PCM Audio Frames
-      ▼
-[Streaming Browser Audio Queue] (Instant playback while LLM continues generating)
+```mermaid
+flowchart LR
+    A[User Speech] --> B[STT Layer]
+    B --> C[50k-Chunk Hybrid Retrieval]
+    C --> D[Qwen2.5-1.5B Streaming]
+    D --> E[Adaptive Text Buffer]
+    E --> F[Local ONNX TTS]
+    F --> G[Streaming Audio Playback]
 ```
 
 Because Chunk 1 provides ~2.5–4.0 seconds of spoken duration, and Qwen2.5-1.5B completes its entire 24-token response in ~214 ms, the playback queue never starves, yielding **100% audio continuity with 0 starvation gaps**.
