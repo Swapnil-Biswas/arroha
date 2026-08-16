@@ -1,0 +1,28 @@
+{
+  "python_version": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "torch_info": {
+    "version": "2.6.0+cu124",
+    "cuda_available": true,
+    "device_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "device_capability": [
+      8,
+      9
+    ],
+    "vram_total_mb": 6140.5
+  },
+  "model": {
+    "path": "C:\\Users\\swapn\\.lmstudio\\models\\lmstudio-community\\Qwen3-4B-Instruct-2507-GGUF\\Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "exists": true,
+    "size_mb": 2381.59
+  },
+  "llama_binaries": {
+    "dir": "C:\\Users\\swapn\\Downloads\\llama-b10451-bin-win-cuda-12.4-x64",
+    "exists": true,
+    "llama_dll": true,
+    "ggml_cuda_dll": true,
+    "ctypes_load_ok": true,
+    "supports_gpu": false,
+    "system_info": "N/A"
+  }
+}

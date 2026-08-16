@@ -28,6 +28,9 @@ class VoiceQueryRequest(BaseModel):
     language_hint: Optional[str] = Field(None, description="Optional language hint for STT")
     top_k: Optional[int] = Field(None, ge=1, le=20)
     include_debug: bool = Field(False)
+    stream: bool = Field(True, description="Whether to stream audio frames incrementally as LLM generates")
+    mode: str = Field("voice", description="Interaction mode: 'voice' or 'text'")
+    session_id: Optional[str] = Field(None, description="Client session identifier for interruption tracking")
 
 
 class BenchmarkQuery(BaseModel):

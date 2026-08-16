@@ -77,15 +77,22 @@ ENABLE_RERANKER: bool = os.getenv("ENABLE_RERANKER", "false").lower() in ("true"
 MIN_RETRIEVAL_SCORE: float = float(os.getenv("MIN_RETRIEVAL_SCORE", "0.25"))
 
 # ---------------------------------------------------------------------------
-# LLM Generation Configuration (Qwen3 4B 2507 Q4_K_M baseline)
+# LLM Generation Configuration (Qwen2.5-1.5B-Instruct Q4_K_M validated)
 # ---------------------------------------------------------------------------
-LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "lm_studio")  # lm_studio, openai_compat, mock
-LLM_ENDPOINT: str = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:1234/v1")
-LLM_API_KEY: str = os.getenv("LLM_API_KEY", "lm-studio")
-LLM_MODEL_ID: str = os.getenv("LLM_MODEL_ID", "qwen/qwen3-4b-2507")
-LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "150"))
+LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai_compat")  # openai_compat (llama-server), lm_studio, mock
+LLM_ENDPOINT: str = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:8080/v1")
+LLM_API_KEY: str = os.getenv("LLM_API_KEY", "dummy")
+LLM_MODEL_ID: str = os.getenv("LLM_MODEL_ID", "qwen2.5-1.5b-instruct")
+LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "24"))
 LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.1"))
 LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "8.0"))
+
+# ---------------------------------------------------------------------------
+# Text-To-Speech (TTS) Configuration
+# ---------------------------------------------------------------------------
+TTS_BACKEND: str = os.getenv("TTS_BACKEND", "local_onnx")  # local_onnx, edge_tts, mock
+TTS_BUFFER_MODE: str = os.getenv("TTS_BUFFER_MODE", "adaptive")  # adaptive, tok3_min, sentence
+TTS_SAMPLE_RATE: int = int(os.getenv("TTS_SAMPLE_RATE", "24000"))
 
 # ---------------------------------------------------------------------------
 # Speech-To-Text Configuration

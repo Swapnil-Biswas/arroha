@@ -39,6 +39,16 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Model binaries & GGUF
+*.gguf
+*.bin
+*.onnx
+
+# Scratch & Temporary
+scratch/
+.tmp/
+evaluation/experiments/
+
 # Test artifacts
 .pytest_cache/
 htmlcov/

@@ -460,3 +460,120 @@ body {
   font-family: var(--font-mono);
   font-weight: 600;
 }
+
+/* Voice Button Group & Interruption */
+.voice-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.interrupt-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ff4757;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: pulse-dot 1.2s infinite;
+}
+
+.interrupt-btn:hover {
+  background: #ff6b81;
+  transform: scale(1.05);
+}
+
+.voice-state-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #141c2c;
+  border: 1px solid #1c273c;
+  color: var(--text-secondary);
+}
+
+.voice-state-indicator .state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #747d8c;
+}
+
+.voice-state-indicator.listening {
+  color: #ffa502;
+  border-color: rgba(255, 165, 2, 0.4);
+}
+.voice-state-indicator.listening .state-dot {
+  background: #ffa502;
+  animation: pulse-dot 0.8s infinite;
+}
+
+.voice-state-indicator.thinking {
+  color: var(--accent-cyan);
+  border-color: rgba(0, 210, 211, 0.4);
+}
+.voice-state-indicator.thinking .state-dot {
+  background: var(--accent-cyan);
+  animation: pulse-dot 0.6s infinite;
+}
+
+.voice-state-indicator.speaking {
+  color: #2ed573;
+  border-color: rgba(46, 213, 115, 0.4);
+}
+.voice-state-indicator.speaking .state-dot {
+  background: #2ed573;
+  animation: pulse-dot 0.5s infinite;
+}
+
+.voice-state-indicator.interrupted {
+  color: #ff4757;
+  border-color: rgba(255, 71, 87, 0.4);
+}
+.voice-state-indicator.interrupted .state-dot {
+  background: #ff4757;
+}
+
+.mode-select {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  align-items: center;
+}
+
+.mode-select input[type="radio"] {
+  accent-color: var(--accent-cyan);
+  margin-right: 4px;
+}
+
+.badge-voice {
+  background: #1e293b;
+  color: var(--accent-cyan);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #334155;
+}
+
+.latency-item.highlight {
+  background: linear-gradient(135deg, rgba(0, 210, 211, 0.15), rgba(72, 52, 212, 0.15));
+  border-color: var(--accent-cyan);
+}
+
+.latency-item.highlight .val {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+

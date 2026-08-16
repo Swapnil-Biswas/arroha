@@ -20,6 +20,9 @@ from app.config import (
     MIN_RETRIEVAL_SCORE,
     RETRIEVAL_TOP_K,
     STRETCH_LATENCY_BUDGET_MS,
+    TTS_BACKEND,
+    TTS_BUFFER_MODE,
+    TTS_SAMPLE_RATE,
 )
 from app.generation.llm import LLMGenerator
 from app.generation.prompts import build_rag_prompt
@@ -32,8 +35,12 @@ from app.schemas.response import (
     LatencyBreakdown,
     RAGResponse,
     SourceDocument,
+    VoiceStreamChunk,
 )
+from app.voice.language_router import LanguageRouter
+from app.voice.pipeline import StreamingVoicePipeline
 from app.voice.stt import SpeechToTextEngine
+from app.voice.tts_backend import TTSBackend, create_tts_backend
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +48,7 @@ logger = logging.getLogger(__name__)
 class RAGPipeline:
     """
     Core RAG Pipeline coordinating all components.
+    Supports both synchronous text RAG and concurrent streaming voice RAG.
     """
 
     def __init__(
@@ -50,12 +58,19 @@ class RAGPipeline:
         guardrails_validator: Optional[GuardrailsValidator] = None,
         stt_engine: Optional[SpeechToTextEngine] = None,
         reranker: Optional[Reranker] = None,
+        tts_backend: Optional[TTSBackend] = None,
+        streaming_voice_pipeline: Optional[StreamingVoicePipeline] = None,
     ) -> None:
         self.hybrid_retriever = hybrid_retriever or HybridRetriever()
         self.llm_generator = llm_generator or LLMGenerator()
         self.guardrails = guardrails_validator or GuardrailsValidator()
         self.stt = stt_engine or SpeechToTextEngine()
         self.reranker = reranker or Reranker()
+        self.tts_backend = tts_backend or create_tts_backend(TTS_BACKEND, sample_rate=TTS_SAMPLE_RATE)
+        self.voice_pipeline = streaming_voice_pipeline or StreamingVoicePipeline(
+            tts_backend=self.tts_backend,
+            buffer_mode=TTS_BUFFER_MODE,
+        )
 
     def process_query(self, request: QueryRequest) -> RAGResponse:
         """
@@ -159,7 +174,7 @@ class RAGPipeline:
 
     def process_voice_query(self, request: VoiceQueryRequest) -> RAGResponse:
         """
-        Execute full Voice-Enabled RAG pipeline: Voice -> STT -> Text RAG.
+        Execute full Voice-Enabled RAG pipeline: Voice -> STT -> RAG Retrieval -> LLM -> Concurrent TTS.
         """
         t_voice_start = time.perf_counter_ns()
 
@@ -201,6 +216,19 @@ class RAGPipeline:
         )
         response = self.process_query(text_request)
 
+        # 3. If Voice Mode requested, synthesize speech
+        if request.mode == "voice":
+            v_cfg = LanguageRouter.get_voice_config(detected_lang)
+            t_synth_0 = time.perf_counter_ns()
+            audio_chunk = self.tts_backend.synthesize_chunk(response.answer, language=detected_lang)
+            synth_ms = (time.perf_counter_ns() - t_synth_0) / 1e6
+            response.audio_base64 = audio_chunk.audio_base64
+            response.audio_format = "wav"
+            response.voice_type = v_cfg.get("voice_type", "NATIVE VOICE")
+            response.latency.tts_first_chunk_ms = round(synth_ms, 2)
+            first_audio_ms = response.latency.llm_ttft_ms + round(synth_ms, 2)
+            response.latency.first_audio_latency_ms = round(first_audio_ms, 2)
+
         # Update STT latency and overall total
         response.latency.stt_ms = round(stt_ms, 2)
         total_voice_ms = (time.perf_counter_ns() - t_voice_start) / 1_000_000.0
@@ -209,3 +237,94 @@ class RAGPipeline:
         response.latency.stretch_achieved_150ms = total_voice_ms <= STRETCH_LATENCY_BUDGET_MS
 
         return response
+
+    def stream_voice_query(
+        self, request: VoiceQueryRequest, session_id: Optional[str] = None
+    ) -> Generator[VoiceStreamChunk, None, None]:
+        """
+        Streaming Voice Pipeline Generator:
+        Yields real-time events (status, transcript, token, audio_chunk, done).
+        """
+        sid = session_id or request.session_id or str(uuid.uuid4())[:8]
+
+        # 1. STT Phase
+        yield VoiceStreamChunk(event="status", session_id=sid, text="LISTENING")
+
+        if not request.audio_base64:
+            yield VoiceStreamChunk(
+                event="error",
+                session_id=sid,
+                text="No audio payload provided.",
+                is_final=True,
+            )
+            return
+
+        transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
+            audio_data=request.audio_base64,
+            language_hint=request.language_hint,
+            audio_format=request.audio_format,
+        )
+
+        if not transcribed_text:
+            yield VoiceStreamChunk(
+                event="error",
+                session_id=sid,
+                text="Unable to transcribe audio or audio was silent.",
+                is_final=True,
+            )
+            return
+
+        # Emit transcription to client
+        yield VoiceStreamChunk(
+            event="transcript",
+            session_id=sid,
+            text=transcribed_text,
+        )
+
+        # 2. Retrieval Phase
+        is_valid, cleaned_query, detected_script, error_reason, in_latency = self.guardrails.validate_input(
+            transcribed_text, language_hint=detected_lang
+        )
+
+        if not is_valid:
+            yield VoiceStreamChunk(
+                event="error",
+                session_id=sid,
+                text=error_reason or "Invalid query input.",
+                is_final=True,
+            )
+            return
+
+        top_k = request.top_k or RETRIEVAL_TOP_K
+        sources, ret_latencies = self.hybrid_retriever.search(query=cleaned_query, top_k=top_k)
+        ret_ms = ret_latencies.get("hybrid_fusion_ms", 15.0)
+
+        # 3. Concurrent LLM + TTS Streaming
+        system_prompt, user_msg = build_rag_prompt(cleaned_query, sources)
+
+        def stream_supplier():
+            return self.llm_generator.client.chat.completions.create(
+                model=self.llm_generator.model_id,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_msg},
+                ],
+                max_tokens=self.llm_generator.max_tokens,
+                temperature=self.llm_generator.temperature,
+                stream=True,
+            )
+
+        for event_chunk in self.voice_pipeline.stream_voice_events(
+            query=cleaned_query,
+            language=detected_lang or detected_script,
+            retrieval_ms=ret_ms,
+            llm_stream_generator=stream_supplier,
+            session_id=sid,
+        ):
+            if event_chunk.latency:
+                event_chunk.latency.stt_ms = round(stt_ms, 2)
+            yield event_chunk
+
+    def interrupt(self, session_id: str) -> bool:
+        """Interrupt active voice stream for session_id."""
+        return self.voice_pipeline.interrupt_session(session_id)

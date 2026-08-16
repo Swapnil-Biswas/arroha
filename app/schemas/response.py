@@ -36,6 +36,8 @@ class LatencyBreakdown(BaseModel):
     prompt_construction_ms: float = 0.0
     llm_ttft_ms: float = 0.0
     llm_generation_ms: float = 0.0
+    tts_first_chunk_ms: float = 0.0
+    first_audio_latency_ms: float = 0.0
     grounding_check_ms: float = 0.0
     total_ms: float = 0.0
 
@@ -51,6 +53,20 @@ class GroundingResult(BaseModel):
     refusal_reason: Optional[str] = None
 
 
+class VoiceStreamChunk(BaseModel):
+    """Event-stream packet for real-time speech and token transport."""
+    event: str = Field(..., description="'status', 'transcript', 'token', 'audio_chunk', 'metrics', 'done', 'error'")
+    session_id: Optional[str] = None
+    text: Optional[str] = None
+    delta: Optional[str] = None
+    audio_base64: Optional[str] = None
+    chunk_index: Optional[int] = None
+    audio_duration_ms: Optional[float] = None
+    synthesis_latency_ms: Optional[float] = None
+    is_final: bool = False
+    latency: Optional[LatencyBreakdown] = None
+
+
 class RAGResponse(BaseModel):
     """Standard structured output for RAG queries."""
     query: str
@@ -62,6 +78,9 @@ class RAGResponse(BaseModel):
     latency: LatencyBreakdown
     request_id: Optional[str] = None
     debug_info: Optional[dict[str, Any]] = None
+    audio_base64: Optional[str] = None
+    audio_format: Optional[str] = None
+    voice_type: Optional[str] = None
 
 
 class HealthResponse(BaseModel):
@@ -74,4 +93,5 @@ class HealthResponse(BaseModel):
     bm25_index_ready: bool
     total_indexed_documents: int
     gpu_available: bool
+    tts_backend: str = "local_onnx"
     target_latency_budget_ms: float = 200.0

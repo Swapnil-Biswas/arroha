@@ -15,7 +15,7 @@ from typing import Any
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import (
@@ -25,10 +25,11 @@ from app.config import (
     EMBEDDING_MODEL_ID,
     LATENCY_BUDGET_MS,
     LLM_MODEL_ID,
+    TTS_BACKEND,
 )
 from app.pipeline import RAGPipeline
 from app.schemas.query import QueryRequest, VoiceQueryRequest
-from app.schemas.response import HealthResponse, RAGResponse
+from app.schemas.response import HealthResponse, RAGResponse, VoiceStreamChunk
 
 # Setup logging
 logging.basicConfig(
@@ -39,8 +40,8 @@ logger = logging.getLogger("api")
 
 app = FastAPI(
     title="HH Goa 2026: Multilingual Voice RAG API",
-    description="Low-latency voice-enabled RAG pipeline (<200ms) over MSMARCO-XI with Qwen3 4B.",
-    version="1.0.0",
+    description="Low-latency voice-enabled RAG pipeline (<200ms) with concurrent local streaming speech synthesis.",
+    version="1.1.0",
 )
 
 # CORS middleware
@@ -65,20 +66,21 @@ def health() -> HealthResponse:
 
     return HealthResponse(
         status="ok" if (is_vec_ready or is_bm25_ready) else "indexes_empty",
-        version="1.0.0",
+        version="1.1.0",
         model_id=LLM_MODEL_ID,
         embedding_model=EMBEDDING_MODEL_ID,
         vector_index_ready=is_vec_ready,
         bm25_index_ready=is_bm25_ready,
         total_indexed_documents=total_docs,
         gpu_available=torch.cuda.is_available(),
+        tts_backend=TTS_BACKEND,
         target_latency_budget_ms=LATENCY_BUDGET_MS,
     )
 
 
 @app.post("/query", response_model=RAGResponse)
 def process_text_query(request: QueryRequest) -> RAGResponse:
-    """Execute full multilingual text RAG pipeline."""
+    """Execute full multilingual text RAG pipeline (mode=text)."""
     try:
         return pipeline.process_query(request)
     except Exception as exc:
@@ -91,7 +93,7 @@ def process_text_query(request: QueryRequest) -> RAGResponse:
 
 @app.post("/voice", response_model=RAGResponse)
 def process_voice_query(request: VoiceQueryRequest) -> RAGResponse:
-    """Execute voice RAG pipeline with base64 encoded audio payload."""
+    """Execute voice RAG pipeline with base64 encoded audio payload (mode=voice)."""
     try:
         return pipeline.process_voice_query(request)
     except Exception as exc:
@@ -100,6 +102,46 @@ def process_voice_query(request: VoiceQueryRequest) -> RAGResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while processing voice query.",
         )
+
+
+@app.post("/voice/stream")
+def stream_voice_query(request: VoiceQueryRequest) -> StreamingResponse:
+    """
+    Execute streaming voice RAG pipeline via Server-Sent Events (SSE).
+    Streams delta text tokens and synthesized audio frames concurrently as LLM generates.
+    """
+    def event_generator():
+        try:
+            for event_chunk in pipeline.stream_voice_query(request):
+                payload = event_chunk.model_dump_json()
+                yield f"event: {event_chunk.event}\ndata: {payload}\n\n"
+        except Exception as exc:
+            logger.error("Streaming error: %s", exc, exc_info=True)
+            err_chunk = VoiceStreamChunk(event="error", text=str(exc), is_final=True)
+            yield f"event: error\ndata: {err_chunk.model_dump_json()}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@app.post("/voice/interrupt")
+def interrupt_voice_session(session_id: str = "default") -> dict[str, Any]:
+    """
+    Barge-in / Interruption endpoint: Immediately stops speech synthesis & audio playback for active session.
+    """
+    interrupted = pipeline.interrupt(session_id)
+    return {
+        "session_id": session_id,
+        "interrupted": interrupted,
+        "status": "cancelled" if interrupted else "no_active_session",
+    }
 
 
 @app.post("/voice/upload", response_model=RAGResponse)
@@ -111,6 +153,7 @@ async def process_voice_upload(file: UploadFile = File(...)) -> RAGResponse:
         req = VoiceQueryRequest(
             audio_base64=b64_audio,
             audio_format=file.filename.split(".")[-1] if file.filename else "wav",
+            mode="voice",
         )
         return pipeline.process_voice_query(req)
     except Exception as exc:
@@ -132,6 +175,7 @@ def get_metrics() -> dict[str, Any]:
         "bm25_weight": pipeline.hybrid_retriever.bm25_weight,
         "embedding_model": EMBEDDING_MODEL_ID,
         "llm_model": LLM_MODEL_ID,
+        "tts_backend": TTS_BACKEND,
         "cuda_enabled": torch.cuda.is_available(),
     }
 

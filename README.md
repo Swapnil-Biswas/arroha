@@ -1,6 +1,7 @@
-# HH Goa 2026 — Multilingual Voice-Enabled RAG System (Task 2)
+# ARROHA — Multilingual Voice-Enabled RAG System (Task 2)
+### Hackathon Goa 2026 — AI-Driven Retrieval & Real-Time Spoken Query Pipeline
 
-A high-performance, real-time, multilingual Retrieval-Augmented Generation (RAG) system built over the **ai4bharat/MSMARCO-XI** dataset, optimized for spoken query pipelines under a strict **<200 ms latency budget** (achieving **P50 = 18.33 ms**).
+ARROHA is a high-performance, real-time, multilingual Retrieval-Augmented Generation (RAG) system built over the **ai4bharat/MSMARCO-XI** dataset (50,400 chunks across 15 Indic and global languages). Optimized for spoken dialogue, ARROHA delivers low-latency conversational audio through a concurrent streaming pipeline designed for the **<200 ms post-STT latency requirement**.
 
 ---
 
@@ -8,144 +9,178 @@ A high-performance, real-time, multilingual Retrieval-Augmented Generation (RAG)
 
 ```mermaid
 flowchart TD
-    A[User Voice Input / Spoken Audio] --> B[Speech-to-Text Engine\nfaster-whisper]
+    A[User Voice Input / Spoken Audio] --> B[Speech-to-Text Engine\nWhisper / High-Speed STT]
     B --> C[User Query & Detected Language]
     C --> D[Input Guardrails & Sanitization]
     
     D --> E1[Multilingual Embedder\nparaphrase-multilingual-MiniLM-L12-v2]
     D --> E2[Multilingual Tokenizer]
     
-    E1 --> F1[Dense Vector Search\nFAISS IndexFlatIP]
-    E2 --> F2[Sparse Lexical Search\nBM25Okapi]
+    E1 --> F1[Dense Vector Search\nFAISS IndexFlatIP (50.4k chunks)]
+    E2 --> F2[Sparse Lexical Search\nSQLite FTS5 BM25]
     
-    F1 --> G[Candidate Fusion & Score Normalization\nDense: 0.6 + BM25: 0.4]
+    F1 --> G[Candidate Fusion & Score Normalization\nDense: 0.8 + BM25: 0.2]
     F2 --> G
     
-    G --> H[Top-K Candidate Sources & Context]
-    H --> I[Optional Lightweight Reranker]
+    G --> H[Top-K Grounded Source Context]
+    H --> I[Grounded Prompt Assembly]
     
-    I --> J[Grounded Prompt Assembly]
-    J --> K[Qwen3 4B 2507 Q4_K_M\nLM Studio Local API]
+    I --> J[Qwen2.5-1.5B-Instruct Q4_K_M\nllama-server CUDA 12.4 Streaming]
     
-    K --> L[Grounding & Hallucination Guardrail]
-    L --> M[Output Sanitization & Structured Response]
-    M --> N[Client UI / Audio Synthesis]
+    J -->|Delta Tokens| K[Adaptive Streaming Text Buffer\nBPE Leading-Space Boundaries]
+    K -->|Chunk 1 Eager (3-4 words)| L[Local ONNX Streaming Synthesizer\nSub-16ms Acoustic Synthesis]
+    K -->|Subsequent Clauses| L
+    
+    L -->|16-bit 24kHz PCM Chunks| M[Web Audio Queue & Streaming Playback]
+    M --> N[Real-Time Conversational Audio Stream]
 ```
 
 ---
 
-## 2. Latency Benchmarks (Measured on ASUS ROG Strix G16 — RTX 4050 6GB)
+## 2. Real-Time Streaming Voice RAG
 
-Target requirement: **Full pipeline < 200 ms** | Stretch goal: **< 150 ms**
+Traditional voice RAG systems suffer from a sequential **generate-then-speak** latency barrier (often >1,200 ms). ARROHA overcomes this with a **concurrent producer-consumer streaming architecture**:
 
-### Stage-by-Stage Latency Breakdown (70 Multi-Query Runs)
+```
+[User Speech] 
+      │
+      ▼
+[STT Layer] 
+      │ Transcribed Text
+      ▼
+[50,400-Chunk Hybrid Retrieval] (FAISS + SQLite FTS5 ~18 ms)
+      │ Top-5 Grounded Sources
+      ▼
+[Qwen2.5-1.5B Streaming Generation] (llama-server CUDA ~103 ms TTFT)
+      │ Incremental Delta Tokens
+      ▼
+[Adaptive Text Buffering] (Eager Chunk 1 at 3-4 words / clause boundary)
+      │ Speech-Ready Word Chunks
+      ▼
+[Local ONNX Streaming Synthesizer] (~15.8 ms synthesis latency)
+      │ 24kHz PCM Audio Frames
+      ▼
+[Streaming Browser Audio Queue] (Instant playback while LLM continues generating)
+```
 
-| Pipeline Stage | Mean (ms) | P50 (ms) | P70 (ms) | P100 (ms) | Status |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Input Guardrails** | 0.06 ms | 0.06 ms | 0.06 ms | 0.10 ms | ✅ `< 1 ms` |
-| **Query Embedding** | 18.94 ms | 17.38 ms | 18.96 ms | 48.71 ms | ✅ `< 20 ms` |
-| **Vector Search (FAISS)** | 0.06 ms | 0.06 ms | 0.07 ms | 0.12 ms | ✅ `< 1 ms` |
-| **Lexical Search (BM25)** | 0.21 ms | 0.20 ms | 0.23 ms | 0.42 ms | ✅ `< 1 ms` |
-| **Hybrid Fusion** | 0.05 ms | 0.04 ms | 0.05 ms | 0.51 ms | ✅ `< 1 ms` |
-| **Prompt Assembly** | 0.01 ms | 0.01 ms | 0.02 ms | 0.02 ms | ✅ `< 1 ms` |
-| **Grounding Check** | 0.05 ms | 0.05 ms | 0.06 ms | 0.13 ms | ✅ `< 1 ms` |
-| **Overall Pipeline** | **19.63 ms** | **18.33 ms** | **19.65 ms** | **49.53 ms** | ✅ **TARGET ACHIEVED** |
+Because Chunk 1 provides ~2.5–4.0 seconds of spoken duration, and Qwen2.5-1.5B completes its entire 24-token response in ~214 ms, the playback queue never starves, yielding **100% audio continuity with 0 starvation gaps**.
 
-> **Verdict:** **P50: 18.33 ms** | **P70: 19.65 ms** | **P100: 49.53 ms** (Stretch goal `< 150 ms` comfortably exceeded).
+### Production API Endpoints
+
+- **`POST /voice/stream`**: Server-Sent Events (SSE) streaming endpoint yielding real-time `status`, `transcript`, delta `token`, synthesized `audio_chunk` frames, and `done` latency metrics.
+- **`POST /voice/interrupt`**: Instant barge-in cancellation endpoint that halts active speech synthesis, drains server queues, and returns control to the user.
+- **`POST /voice`**: Synchronous voice query endpoint returning full text answer, grounded citations, and base64 WAV payload.
+- **`POST /query`**: Text-mode compatibility endpoint for standard non-streaming RAG queries.
+- **`GET /health` & `GET /metrics`**: Service health, active index counts, model bindings, and latency instrumentation.
+
+### Production Voice Modules (`app/voice/`)
+
+- **`app/voice/language_router.py`**: Canonical 15-language router mapping native neural voices (`en`, `hi`, `bn`, `ta`, `te`, `mr`, `gu`, `kn`, `ml`, `pa`, `ne`, `ur`) and phonetic fallbacks (`or`, `as`, `sa`).
+- **`app/voice/tts_backend.py`**: High-performance local acoustic synthesizer using ONNX Runtime with sub-16ms latency, zero GPU VRAM contention, and cloud Edge-TTS fallback.
+- **`app/voice/streaming_buffer.py`**: Deterministic BPE leading-space boundary buffer with eager Chunk 1 emission.
+- **`app/voice/pipeline.py`**: Multi-threaded concurrent streaming voice orchestrator with thread-safe session cancellation.
+- **`app/voice/stt.py`**: Speech-to-Text engine supporting Whisper and high-speed audio processors.
 
 ---
 
-## 3. Retrieval Quality Evaluation
+## 3. Validated Production Benchmarks
 
-Benchmarked against MSMARCO-XI `is_selected` gold labels across Indic languages:
+### Test Environment
+- **Hardware:** ASUS ROG Strix G16 (Intel Core i7-13650HX, NVIDIA GeForce RTX 4050 Laptop GPU 6GB GDDR6, 16GB RAM)
+- **LLM Backend:** Qwen2.5-1.5B-Instruct Q4_K_M on `llama-server` b10451 (CUDA 12.4, `-ngl 99`, `--cache-reuse 64`, `max_tokens=24`, `temperature=0.1`)
+- **Retrieval Corpus:** 50,400 chunks, FAISS `IndexFlatIP` (384-d MiniLM) + SQLite FTS5 lexical index, dense-heavy hybrid fusion (0.8 dense / 0.2 BM25)
+- **Benchmark Suite:** 45 canonical multilingual queries across all 15 supported locales
 
-| Retriever | Recall@5 | Precision@5 | MRR@5 |
-| :--- | :---: | :---: | :---: |
-| **BM25 (Sparse)** | 1.4286 | 0.4095 | 0.9286 |
-| **FAISS (Dense)** | 2.0000 | 0.4000 | 0.9286 |
-| **Hybrid Fusion (Dense + BM25)** | **2.0000** | **0.4000** | **1.0000** |
+### Live Production Streaming Voice Results
 
-* **In-Domain Grounding Accuracy:** **100.0% (7/7)**
-* **Out-of-Domain Refusal Rate:** **100.0% (3/3)**
+| Metric | Result |
+|---|---:|
+| **TTFA P50** (Time-to-First-Audio) | **141.94 ms** |
+| **TTFA P90** | **179.42 ms** |
+| **TTFA P95** | **197.86 ms** |
+| **< 200 ms queries** | **95.56% (43 / 45)** |
+| **< 150 ms queries** | **66.67% (30 / 45)** |
+| **Pre-completion speech** | **100% (45 / 45)** |
+| **Audio starvation** | **0 gaps (100% continuity)** |
+| **Factual grounding accuracy** | **73.33%** |
+| **Production smoke tests** | **10 / 10 (100% passed)** |
+
+> **Performance Summary:** ARROHA achieves a production-validated sub-200 ms real-time voice response target for **95.56% of the 45-query multilingual benchmark**, with a **141.94 ms TTFA P50**. Speech playback begins while the LLM is still generating remaining tokens, enabling instantaneous conversational responsiveness across all 15 Indian and global languages.
 
 ---
 
 ## 4. Multilingual Dataset & Data Safety
 
-- **Dataset:** `ai4bharat/MSMARCO-XI` (13 Indic languages: Assamese, Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Nepali, Odia, Punjabi, Sanskrit, Tamil, Telugu, Urdu + English).
+- **Dataset:** `ai4bharat/MSMARCO-XI` (15 languages: Assamese, Bengali, English, Gujarati, Hindi, Kannada, Malayalam, Marathi, Nepali, Odia, Punjabi, Sanskrit, Tamil, Telugu, Urdu).
 - **Strict Data-Safety Enforcement:**
-  - `Answer` and `Eng_Answer` are **NEVER** placed into searchable corpus text.
+  - `Answer` and `Eng_Answer` are **NEVER** placed into the searchable corpus text.
   - `is_selected` is strictly isolated as evaluation metadata.
-  - Documents are constructed purely from passages (`Translated_passages` and `English_passages`).
+  - Documents are constructed purely from genuine passages (`Translated_passages` and `English_passages`).
 
 ---
 
-## 5. Chunking Strategies
-
-Selectable via configuration (`CHUNKING_STRATEGY` in `.env`):
-1. **`sentence` (Default):** Multilingual sentence boundary splitter handling Indic punctuation (`।`, `॥`) and Latin punctuation (`.`, `?`, `!`, `\n`).
-2. **`fixed`:** Fixed character windows with configurable sliding overlap.
-3. **`passage`:** Atomic passage preservation with fallback.
-4. **`recursive`:** Hierarchical multi-delimiter recursive chunker.
-
----
-
-## 6. Project Structure
+## 5. Project Structure
 
 ```text
 hhgoaRAG/
 ├── app/
-│   ├── main.py              # FastAPI server with /query, /voice, /health, /metrics
-│   ├── config.py            # Centralized environment configuration
-│   ├── pipeline.py          # End-to-end RAG orchestrator with nanosecond timing
-│   ├── retrieval/
-│   │   ├── bm25.py          # BM25 lexical retriever
-│   │   ├── vector.py        # FAISS dense vector retriever
-│   │   ├── hybrid.py        # Hybrid score fusion (Dense + BM25)
-│   │   └── reranker.py      # Lightweight optional reranker
-│   ├── generation/
-│   │   ├── llm.py           # Qwen3 4B LM Studio client with fallback
-│   │   └── prompts.py       # Grounded multilingual system prompts
+│   ├── main.py                  # FastAPI server with /voice/stream, /voice/interrupt, /query
+│   ├── config.py                # Centralized environment configuration
+│   ├── pipeline.py              # End-to-end RAG orchestrator with streaming voice support
 │   ├── voice/
-│   │   └── stt.py           # Speech-to-Text engine (faster-whisper / audio processing)
+│   │   ├── language_router.py   # 15-language voice router (Native + Fallback)
+│   │   ├── tts_backend.py       # Local ONNX streaming synthesizer (<16ms)
+│   │   ├── streaming_buffer.py  # Adaptive BPE boundary token buffer
+│   │   ├── pipeline.py          # Concurrent LLM + TTS streaming pipeline
+│   │   └── stt.py               # Speech-to-Text layer
+│   ├── retrieval/
+│   │   ├── bm25.py              # SQLite FTS5 / BM25 lexical retriever
+│   │   ├── vector.py            # FAISS dense vector retriever
+│   │   ├── hybrid.py            # Hybrid score fusion (Dense 0.8 + BM25 0.2)
+│   │   └── reranker.py          # Lightweight optional reranker
+│   ├── generation/
+│   │   ├── llm.py               # LLM generator with streaming OpenAI-compatible client
+│   │   └── prompts.py           # Concise grounded multilingual system prompts
 │   ├── guardrails/
-│   │   ├── input.py         # Query sanitization, script detection & injection filter
-│   │   ├── grounding.py     # Hallucination detection & refusal check
-│   │   ├── output.py        # Output length & format bounding
-│   │   └── validator.py     # Unified guardrail service
+│   │   ├── input.py             # Query sanitization, script detection & injection filter
+│   │   ├── grounding.py         # Hallucination detection & refusal check
+│   │   ├── output.py            # Output length & format bounding
+│   │   └── validator.py         # Unified guardrail service
 │   ├── schemas/
-│   │   ├── query.py         # Pydantic request models
-│   │   └── response.py      # Pydantic structured output models
-│   └── static/              # Interactive Web Demo UI (HTML, CSS, JS)
+│   │   ├── query.py             # Pydantic request models (VoiceQueryRequest, QueryRequest)
+│   │   └── response.py          # Pydantic models (VoiceStreamChunk, RAGResponse)
+│   └── static/                  # Web Demo UI (HTML5, Vanilla CSS, Web Audio JS)
 │
 ├── ingestion/
-│   ├── inspect_dataset.py   # Dataset schema inspection tool
-│   ├── download.py          # Multilingual shard downloader & corpus generator
-│   ├── preprocess.py        # Unicode NFC normalization & document extraction
-│   ├── models.py            # Canonical Document, Chunk, and Record models
-│   ├── chunking.py          # 4 chunking strategies
-│   └── build_index.py       # Index construction CLI & pipeline
+│   ├── inspect_dataset.py       # Dataset schema inspection tool
+│   ├── download.py              # Multilingual shard downloader & corpus generator
+│   ├── preprocess.py            # Unicode NFC normalization & document extraction
+│   ├── models.py                # Canonical Document, Chunk, and Record models
+│   ├── chunking.py              # 4 chunking strategies (sentence, fixed, passage, recursive)
+│   └── build_index.py           # Index construction CLI & pipeline
 │
 ├── indexing/
-│   ├── embeddings.py        # sentence-transformers multilingual embedder (GPU/CPU)
-│   ├── faiss_index.py       # FAISS IndexFlatIP vector index manager
-│   └── bm25_index.py        # Multilingual BM25Okapi lexical index manager
+│   ├── embeddings.py            # sentence-transformers multilingual embedder (GPU/CPU)
+│   ├── faiss_index.py           # FAISS IndexFlatIP vector index manager
+│   └── bm25_index.py            # Multilingual lexical index manager
 │
 ├── evaluation/
-│   ├── latency.py           # High-resolution P50, P70, P100 latency benchmarking
-│   ├── retrieval.py         # Recall@K, Precision@K, MRR@K evaluation
-│   └── rag_quality.py       # Grounding and refusal accuracy test harness
+│   ├── production_smoke_test.py      # 10-test production validation test suite
+│   ├── production_voice_benchmark.py  # 45-query live streaming voice benchmark suite
+│   ├── voice_end_to_end_benchmark.py # End-to-end voice streaming condition evaluations
+│   ├── model_quality_forensics.py    # Forensic 3-model quality & hallucination benchmark
+│   └── results/                      # Validated benchmark reports & raw telemetry (JSON/MD)
 │
-├── tests/                   # 19 passing unit and integration tests
-├── data/                    # Raw & processed corpus data (git-ignored)
-├── indexes/                 # Saved FAISS & BM25 binary indexes (git-ignored)
-├── run.py                   # Root launcher CLI
+├── tests/                       # Unit and integration test suite
+├── data/                        # Raw & processed corpus data (git-ignored)
+├── indexes/                     # Saved FAISS & FTS5 binary indexes (git-ignored)
+├── run.py                       # Root launcher CLI
 └── requirements.txt
 ```
 
 ---
 
-## 7. Quick Start & Execution
+## 6. Quick Start & Execution
 
 ### 1. Environment Setup
 ```powershell
@@ -154,30 +189,23 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Build Indexes
+### 2. Start Inference Server (llama-server)
 ```powershell
-# Build multilingual index (sample corpus or full shards)
-.venv\Scripts\python ingestion\build_index.py
+# Run Qwen2.5-1.5B with GPU acceleration on port 8080
+llama-server.exe -m path\to\qwen2.5-1.5b-instruct-q4_k_m.gguf -ngl 99 -c 2048 --cache-prompt --cache-reuse 64 --port 8080
 ```
 
-### 3. Run Latency Benchmark
+### 3. Run Production Smoke Tests
 ```powershell
-# Measure P50, P70, P100 latency across multilingual queries
-.venv\Scripts\python evaluation\latency.py
+.venv\Scripts\python evaluation\production_smoke_test.py
 ```
 
-### 4. Run Retrieval & Quality Evaluations
+### 4. Run Live Streaming Voice Benchmark
 ```powershell
-.venv\Scripts\python evaluation\retrieval.py
-.venv\Scripts\python evaluation\rag_quality.py
+.venv\Scripts\python evaluation\production_voice_benchmark.py
 ```
 
-### 5. Run Unit & Integration Test Suite
-```powershell
-.venv\Scripts\pytest -v
-```
-
-### 6. Start the API Server & Demo UI
+### 5. Start the Web Application
 ```powershell
 .venv\Scripts\python run.py serve
 # Open browser at: http://localhost:8000

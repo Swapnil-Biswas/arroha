@@ -1,0 +1,347 @@
+{
+  "local_onnx": {
+    "name": "Local ONNX Streaming Synthesizer (Piper / Kokoro compatible)",
+    "model_size_mb": 45.0,
+    "ram_mb": 120.0,
+    "vram_mb": 0.0,
+    "execution_device": "CPU / GPU DirectML",
+    "load_time_ms": 154.1,
+    "first_audio_p50_ms": 15.87,
+    "first_audio_p95_ms": 16.94,
+    "mean_rtf": 0.0097,
+    "streaming_support": "Sub-chunk incremental PCM frames",
+    "languages_tested": 15,
+    "per_language": {
+      "en": {
+        "language_name": "English",
+        "locale": "en-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "The capital was Pataliputra",
+        "first_audio_latency_ms": 17.84,
+        "full_sentence_synth_ms": 25.45,
+        "audio_duration_ms": 3040.0,
+        "rtf": 0.0084
+      },
+      "hi": {
+        "language_name": "Hindi",
+        "locale": "hi-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "राजधानी पाटलिपुत्र थी",
+        "first_audio_latency_ms": 16.14,
+        "full_sentence_synth_ms": 23.27,
+        "audio_duration_ms": 2280.0,
+        "rtf": 0.0102
+      },
+      "bn": {
+        "language_name": "Bengali",
+        "locale": "bn-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "রাজধানী পাটলিপুত্র ছিল",
+        "first_audio_latency_ms": 16.2,
+        "full_sentence_synth_ms": 22.66,
+        "audio_duration_ms": 2255.0,
+        "rtf": 0.01
+      },
+      "ta": {
+        "language_name": "Tamil",
+        "locale": "ta-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "தலைநகரம் பாடலிபுத்திரம்",
+        "first_audio_latency_ms": 16.3,
+        "full_sentence_synth_ms": 25.03,
+        "audio_duration_ms": 2585.0,
+        "rtf": 0.0097
+      },
+      "te": {
+        "language_name": "Telugu",
+        "locale": "te-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "రాజధాని పాటలీపుత్రం",
+        "first_audio_latency_ms": 14.86,
+        "full_sentence_synth_ms": 21.0,
+        "audio_duration_ms": 1980.0,
+        "rtf": 0.0106
+      },
+      "mr": {
+        "language_name": "Marathi",
+        "locale": "mr-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "राजधानी पाटलीपुत्र होती",
+        "first_audio_latency_ms": 16.16,
+        "full_sentence_synth_ms": 23.3,
+        "audio_duration_ms": 2365.0,
+        "rtf": 0.0099
+      },
+      "gu": {
+        "language_name": "Gujarati",
+        "locale": "gu-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "રાજધાની પાટલીપુત્ર હતી",
+        "first_audio_latency_ms": 15.87,
+        "full_sentence_synth_ms": 22.58,
+        "audio_duration_ms": 2255.0,
+        "rtf": 0.01
+      },
+      "kn": {
+        "language_name": "Kannada",
+        "locale": "kn-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "ರಾಜಧಾನಿ ಪಾಟ್ಲಿಪುತ್ರ",
+        "first_audio_latency_ms": 15.11,
+        "full_sentence_synth_ms": 23.97,
+        "audio_duration_ms": 2475.0,
+        "rtf": 0.0097
+      },
+      "ml": {
+        "language_name": "Malayalam",
+        "locale": "ml-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "തലസ്ഥാനം പാടലീപുത്രം",
+        "first_audio_latency_ms": 15.14,
+        "full_sentence_synth_ms": 25.63,
+        "audio_duration_ms": 2970.0,
+        "rtf": 0.0086
+      },
+      "pa": {
+        "language_name": "Punjabi",
+        "locale": "pa-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "ਰਾਜਧਾਨੀ ਪਾਟਲੀਪੁੱਤਰ ਸੀ",
+        "first_audio_latency_ms": 15.87,
+        "full_sentence_synth_ms": 21.95,
+        "audio_duration_ms": 2280.0,
+        "rtf": 0.0096
+      },
+      "or": {
+        "language_name": "Odia",
+        "locale": "or-IN",
+        "voice_type": "FALLBACK VOICE",
+        "is_native": false,
+        "clause_text": "ରାଜଧାନୀ ପାଟଳିପୁତ୍ର",
+        "first_audio_latency_ms": 14.46,
+        "full_sentence_synth_ms": 23.37,
+        "audio_duration_ms": 2365.0,
+        "rtf": 0.0099
+      },
+      "as": {
+        "language_name": "Assamese",
+        "locale": "as-IN",
+        "voice_type": "FALLBACK VOICE",
+        "is_native": false,
+        "clause_text": "ৰাজধানী পাটলিপুত্ৰ",
+        "first_audio_latency_ms": 15.0,
+        "full_sentence_synth_ms": 22.77,
+        "audio_duration_ms": 2255.0,
+        "rtf": 0.0101
+      },
+      "ne": {
+        "language_name": "Nepali",
+        "locale": "ne-NP",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "राजधानी पाटलिपुत्र थियो",
+        "first_audio_latency_ms": 16.55,
+        "full_sentence_synth_ms": 23.39,
+        "audio_duration_ms": 2310.0,
+        "rtf": 0.0101
+      },
+      "sa": {
+        "language_name": "Sanskrit",
+        "locale": "sa-IN",
+        "voice_type": "FALLBACK VOICE",
+        "is_native": false,
+        "clause_text": "राजधानी पाटलिपुत्रम्",
+        "first_audio_latency_ms": 15.74,
+        "full_sentence_synth_ms": 24.35,
+        "audio_duration_ms": 2475.0,
+        "rtf": 0.0098
+      },
+      "ur": {
+        "language_name": "Urdu",
+        "locale": "ur-IN",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "clause_text": "دارالحکومت پاٹلی پتر",
+        "first_audio_latency_ms": 15.14,
+        "full_sentence_synth_ms": 22.47,
+        "audio_duration_ms": 2660.0,
+        "rtf": 0.0084
+      }
+    }
+  },
+  "edge_tts": {
+    "name": "Microsoft Edge-TTS Cloud Neural Streaming",
+    "model_size_mb": 0.0,
+    "ram_mb": 35.0,
+    "vram_mb": 0.0,
+    "execution_device": "Cloud WebSocket Service",
+    "load_time_ms": 0.01,
+    "first_audio_p50_ms": 1426.71,
+    "first_audio_p95_ms": 11451.91,
+    "mean_rtf": 1.21,
+    "streaming_support": "WebSocket chunk streaming",
+    "languages_tested": 15,
+    "per_language": {
+      "en": {
+        "language_name": "English",
+        "locale": "en-IN",
+        "edge_voice": "en-IN-NeerjaNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 2363.67,
+        "audio_duration_ms": 2808.0,
+        "rtf": 0.8418
+      },
+      "hi": {
+        "language_name": "Hindi",
+        "locale": "hi-IN",
+        "edge_voice": "hi-IN-SwaraNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1659.46,
+        "audio_duration_ms": 3024.0,
+        "rtf": 0.5488
+      },
+      "bn": {
+        "language_name": "Bengali",
+        "locale": "bn-IN",
+        "edge_voice": "bn-IN-TanishaaNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 11340.72,
+        "audio_duration_ms": 2832.0,
+        "rtf": 4.0045
+      },
+      "ta": {
+        "language_name": "Tamil",
+        "locale": "ta-IN",
+        "edge_voice": "ta-IN-PallaviNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1571.99,
+        "audio_duration_ms": 2112.0,
+        "rtf": 0.7443
+      },
+      "te": {
+        "language_name": "Telugu",
+        "locale": "te-IN",
+        "edge_voice": "te-IN-ShrutiNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 11711.36,
+        "audio_duration_ms": 1992.0,
+        "rtf": 5.8792
+      },
+      "mr": {
+        "language_name": "Marathi",
+        "locale": "mr-IN",
+        "edge_voice": "mr-IN-AarohiNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1426.71,
+        "audio_duration_ms": 2928.0,
+        "rtf": 0.4873
+      },
+      "gu": {
+        "language_name": "Gujarati",
+        "locale": "gu-IN",
+        "edge_voice": "gu-IN-DhwaniNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1667.28,
+        "audio_duration_ms": 3168.0,
+        "rtf": 0.5263
+      },
+      "kn": {
+        "language_name": "Kannada",
+        "locale": "kn-IN",
+        "edge_voice": "kn-IN-SapnaNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1340.51,
+        "audio_duration_ms": 2544.0,
+        "rtf": 0.5269
+      },
+      "ml": {
+        "language_name": "Malayalam",
+        "locale": "ml-IN",
+        "edge_voice": "ml-IN-SobhanaNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1728.83,
+        "audio_duration_ms": 2520.0,
+        "rtf": 0.686
+      },
+      "pa": {
+        "language_name": "Punjabi",
+        "locale": "pa-IN",
+        "edge_voice": "pa-IN-GurpreetNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 804.22,
+        "audio_duration_ms": 1140.0,
+        "rtf": 0.7055
+      },
+      "or": {
+        "language_name": "Odia",
+        "locale": "or-IN",
+        "edge_voice": "hi-IN-MadhurNeural",
+        "voice_type": "FALLBACK VOICE",
+        "is_native": false,
+        "first_audio_latency_ms": 957.37,
+        "audio_duration_ms": 760.0,
+        "rtf": 1.2597
+      },
+      "as": {
+        "language_name": "Assamese",
+        "locale": "as-IN",
+        "edge_voice": "bn-IN-TanishaaNeural",
+        "voice_type": "FALLBACK VOICE",
+        "is_native": false,
+        "first_audio_latency_ms": 1218.69,
+        "audio_duration_ms": 2328.0,
+        "rtf": 0.5235
+      },
+      "ne": {
+        "language_name": "Nepali",
+        "locale": "ne-NP",
+        "edge_voice": "ne-NP-HemkalaNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1230.09,
+        "audio_duration_ms": 2784.0,
+        "rtf": 0.4418
+      },
+      "sa": {
+        "language_name": "Sanskrit",
+        "locale": "sa-IN",
+        "edge_voice": "hi-IN-SwaraNeural",
+        "voice_type": "FALLBACK VOICE",
+        "is_native": false,
+        "first_audio_latency_ms": 1340.35,
+        "audio_duration_ms": 2832.0,
+        "rtf": 0.4733
+      },
+      "ur": {
+        "language_name": "Urdu",
+        "locale": "ur-IN",
+        "edge_voice": "ur-IN-GulNeural",
+        "voice_type": "NATIVE VOICE",
+        "is_native": true,
+        "first_audio_latency_ms": 1420.99,
+        "audio_duration_ms": 2832.0,
+        "rtf": 0.5018
+      }
+    }
+  }
+}

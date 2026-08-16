@@ -38,17 +38,25 @@
         </div>
 
         <div class="voice-controls">
-          <button id="mic-btn" class="mic-button" title="Click to Record Spoken Voice">
-            <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-            <span id="mic-text">Hold or Click to Speak</span>
-          </button>
-          <div id="recording-indicator" class="recording-indicator hidden">
-            <span class="pulse"></span> Recording Audio...
+          <div class="voice-btn-group">
+            <button id="mic-btn" class="mic-button" title="Click to Record Spoken Voice">
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+              <span id="mic-text">Hold or Click to Speak</span>
+            </button>
+            <button id="interrupt-btn" class="interrupt-btn hidden" title="Interrupt / Stop AI Speech">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              <span>Stop AI</span>
+            </button>
+          </div>
+
+          <div id="voice-state-indicator" class="voice-state-indicator idle">
+            <span class="state-dot"></span>
+            <span id="voice-state-text">Ready</span>
           </div>
         </div>
 
@@ -67,9 +75,13 @@
           </div>
 
           <div class="actions-row">
+            <div class="mode-select">
+              <label><input type="radio" name="rag-mode" value="voice" checked> Real-Time Voice</label>
+              <label><input type="radio" name="rag-mode" value="text"> Text Only</label>
+            </div>
             <div class="weight-controls">
-              <label>Dense (FAISS): <span id="dense-val">0.6</span></label>
-              <input type="range" id="dense-slider" min="0" max="1" step="0.1" value="0.6">
+              <label>Dense (FAISS): <span id="dense-val">0.8</span></label>
+              <input type="range" id="dense-slider" min="0" max="1" step="0.1" value="0.8">
             </div>
             <button id="submit-btn" class="btn btn-primary">
               <span>Execute RAG Pipeline</span>
@@ -85,6 +97,7 @@
           <h2>Grounded Response</h2>
           <div class="badge-group">
             <span id="lang-badge" class="badge-lang">Language: --</span>
+            <span id="voice-badge" class="badge-voice">Voice: --</span>
             <span id="grounding-badge" class="badge-grounding">Grounding: --</span>
           </div>
         </div>
@@ -102,12 +115,12 @@
 
           <div class="latency-grid" id="latency-grid">
             <div class="latency-item"><span class="lbl">STT / Voice</span><span class="val" id="lat-stt">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Input Guardrail</span><span class="val" id="lat-input">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Query Embedding</span><span class="val" id="lat-embed">0.0 ms</span></div>
+            <div class="latency-item highlight"><span class="lbl">⚡ First Audio (TTFA)</span><span class="val" id="lat-first-audio">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">LLM TTFT (T1)</span><span class="val" id="lat-ttft">0.0 ms</span></div>
             <div class="latency-item"><span class="lbl">Vector Search (FAISS)</span><span class="val" id="lat-vector">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">Lexical Search (BM25)</span><span class="val" id="lat-bm25">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">Lexical Search (FTS5)</span><span class="val" id="lat-bm25">0.0 ms</span></div>
             <div class="latency-item"><span class="lbl">Hybrid Fusion</span><span class="val" id="lat-fusion">0.0 ms</span></div>
-            <div class="latency-item"><span class="lbl">LLM Generation</span><span class="val" id="lat-llm">0.0 ms</span></div>
+            <div class="latency-item"><span class="lbl">LLM Generation Total</span><span class="val" id="lat-llm">0.0 ms</span></div>
             <div class="latency-item"><span class="lbl">Grounding Check</span><span class="val" id="lat-grounding">0.0 ms</span></div>
           </div>
         </div>

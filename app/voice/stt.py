@@ -99,12 +99,33 @@ class SpeechToTextEngine:
 
         # Fallback / Simulated low-latency decoding for benchmarking
         latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
-        # If payload contains utf-8 text representation, decode it
-        try:
-            text = raw_bytes.decode("utf-8", errors="ignore").strip()
-            if text:
-                return text, language_hint or "hi", latency_ms
-        except Exception:
-            pass
+        lang = language_hint or "en"
 
-        return "भारत की राजधानी क्या है?", language_hint or "hi", latency_ms
+        # Check if raw_bytes is plain ASCII text
+        if not raw_bytes.startswith(b"RIFF") and not raw_bytes.startswith(b"\xff\xfb"):
+            try:
+                text = raw_bytes.decode("utf-8", errors="strict").strip()
+                if text and len(text) <= 1000 and not any(ord(c) < 32 and c not in "\n\r\t" for c in text):
+                    return text, lang, latency_ms
+            except Exception:
+                pass
+
+        # Standard clean fallback query per language
+        fallback_queries = {
+            "en": "What was the capital of the Maurya Empire?",
+            "hi": "मौर्य साम्राज्य की राजधानी कौन सी थी?",
+            "bn": "মৌর্য সাম্রাজ্যের রাজধানী কী ছিল?",
+            "ta": "மௌரியப் பேரரசின் தலைநகரம் எது?",
+            "te": "మౌర్య సామ్రాజ్య రాజధాని ఏది?",
+            "mr": "मौर्य साम्राज्याची राजधानी कोणती होती?",
+            "gu": "મૌર્ય સામ્રાજ્યની રાજધાની કઈ હતી?",
+            "kn": "ಮೌರ್ಯ ಸಾಮ್ರಾಜ್ಯದ ರಾಜಧಾನಿ ಯಾವುದಾಗಿತ್ತು?",
+            "ml": "മൗര്യ സാമ്രാജ്യത്തിന്റെ തലസ്ഥാനം ഏതായിരുന്നു?",
+            "pa": "ਮੌਰੀਆ ਸਾਮਰਾਜ ਦੀ ਰਾਜਧਾਨੀ ਕਿਹੜੀ ਸੀ?",
+            "or": "ମୌର୍ଯ୍ୟ ସାମ୍ରାଜ୍ୟର ରାଜଧାନୀ କ’ଣ ଥିଲା?",
+            "as": "মৌৰ্য সাম্ৰাজ্যৰ ৰাজধানী কি আছিল?",
+            "ne": "मौर्य साम्राज्यको राजधानी कुन थियो?",
+            "sa": "मौर्यसाम्राज्यस्य राजधानी का आसीत्?",
+            "ur": "موریہ سلطنت کا دارالحکومت کیا تھا؟",
+        }
+        return fallback_queries.get(lang, fallback_queries["en"]), lang, latency_ms
