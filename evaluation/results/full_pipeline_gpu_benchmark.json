@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-08-14T19:28:33Z",
+    "timestamp": "2026-08-15T17:22:07Z",
     "hardware": {
       "system": "ASUS ROG Strix G16",
       "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU",
@@ -10,7 +10,7 @@
     },
     "models": {
       "llm_model": "qwen/qwen3-4b-2507",
-      "llm_endpoint": "http://localhost:1234/v1",
+      "llm_endpoint": "http://127.0.0.1:1234/v1",
       "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "embedding_device": "cuda",
       "embedding_dim": 384
@@ -21,278 +21,278 @@
   },
   "overall_statistics": {
     "input_guardrails_ms": {
-      "p50": 0.08,
-      "p70": 0.09799999999999998,
-      "p95": 0.9979999999999984,
-      "mean": 0.27377777777777773,
-      "min": 0.04,
-      "max": 5.63
+      "p50": 0.04,
+      "p70": 0.05,
+      "p95": 0.43199999999999944,
+      "mean": 0.09355555555555556,
+      "min": 0.02,
+      "max": 0.85
     },
     "query_embed_ms": {
-      "p50": 35.36,
-      "p70": 42.256,
-      "p95": 318.878,
-      "mean": 66.12222222222222,
-      "min": 16.32,
-      "max": 326.1
+      "p50": 11.48,
+      "p70": 13.112,
+      "p95": 52.583999999999996,
+      "mean": 18.846444444444444,
+      "min": 7.73,
+      "max": 129.72
     },
     "vector_retrieval_ms": {
-      "p50": 0.1,
-      "p70": 0.11799999999999997,
-      "p95": 0.29599999999999965,
-      "mean": 0.18222222222222226,
-      "min": 0.05,
-      "max": 3.17
+      "p50": 0.06,
+      "p70": 0.06,
+      "p95": 0.14,
+      "mean": 0.06888888888888889,
+      "min": 0.04,
+      "max": 0.23
     },
     "bm25_retrieval_ms": {
-      "p50": 0.27,
-      "p70": 0.32,
-      "p95": 0.7399999999999998,
-      "mean": 0.32866666666666666,
-      "min": 0.11,
-      "max": 1.1
+      "p50": 0.13,
+      "p70": 0.16799999999999998,
+      "p95": 0.48599999999999993,
+      "mean": 0.18644444444444447,
+      "min": 0.08,
+      "max": 0.57
     },
     "hybrid_fusion_ms": {
-      "p50": 0.06,
-      "p70": 0.07799999999999997,
-      "p95": 0.1439999999999999,
-      "mean": 0.07177777777777776,
-      "min": 0.03,
-      "max": 0.24
+      "p50": 0.04,
+      "p70": 0.04,
+      "p95": 0.1,
+      "mean": 0.04711111111111111,
+      "min": 0.02,
+      "max": 0.13
     },
     "retrieval_total_ms": {
-      "p50": 35.81,
-      "p70": 42.724000000000004,
-      "p95": 320.426,
-      "mean": 66.70488888888887,
-      "min": 16.66,
-      "max": 327.05000000000007
+      "p50": 11.67,
+      "p70": 13.372,
+      "p95": 53.260000000000005,
+      "mean": 19.148888888888887,
+      "min": 7.910000000000001,
+      "max": 130.64
     },
     "prompt_construction_ms": {
-      "p50": 0.02,
-      "p70": 0.02,
-      "p95": 0.06,
-      "mean": 0.029333333333333336,
+      "p50": 0.01,
+      "p70": 0.01,
+      "p95": 0.02,
+      "mean": 0.010222222222222225,
       "min": 0.0,
-      "max": 0.36
+      "max": 0.03
     },
     "llm_ttft_ms": {
-      "p50": 2595.09,
-      "p70": 2660.252,
-      "p95": 3596.2619999999993,
-      "mean": 2682.73,
-      "min": 2337.15,
-      "max": 4078.11
+      "p50": 319.31,
+      "p70": 364.756,
+      "p95": 484.30999999999995,
+      "mean": 327.80333333333334,
+      "min": 145.67,
+      "max": 574.51
     },
     "llm_generation_ms": {
-      "p50": 302.63,
-      "p70": 397.044,
-      "p95": 2492.584,
-      "mean": 650.9657777777777,
-      "min": 195.09,
-      "max": 2663.45
+      "p50": 209.41,
+      "p70": 342.304,
+      "p95": 2319.6059999999998,
+      "mean": 555.8651111111111,
+      "min": 182.1,
+      "max": 2454.26
     },
     "grounding_check_ms": {
-      "p50": 0.01,
-      "p70": 0.02,
-      "p95": 0.13799999999999998,
-      "mean": 0.03688888888888889,
+      "p50": 0.0,
+      "p70": 0.01,
+      "p95": 0.05,
+      "mean": 0.013555555555555559,
       "min": 0.0,
-      "max": 0.41
+      "max": 0.22
     },
     "total_pipeline_ms": {
-      "p50": 3010.27,
-      "p70": 3290.3099999999995,
-      "p95": 5413.299999999999,
-      "mean": 3401.6615555555554,
-      "min": 2647.79,
-      "max": 6710.82
+      "p50": 572.87,
+      "p70": 743.218,
+      "p95": 2733.4799999999996,
+      "mean": 903.3417777777777,
+      "min": 394.19,
+      "max": 2904.52
     },
     "generated_tokens": {
       "p50": 14.0,
       "p70": 14.0,
-      "p95": 28.0,
-      "mean": 15.377777777777778,
+      "p95": 28.799999999999997,
+      "mean": 15.177777777777777,
       "min": 3.0,
       "max": 34.0
     },
     "gen_tokens_per_sec": {
-      "p50": 43.44857550741729,
-      "p70": 60.95517923032801,
-      "p95": 67.66536044246935,
-      "mean": 40.90602669367583,
-      "min": 7.545840983977665,
-      "max": 71.76175098672407
+      "p50": 66.85449596485364,
+      "p70": 71.00588464861902,
+      "p95": 75.23982925528485,
+      "mean": 49.5330011799587,
+      "min": 8.7333702075631,
+      "max": 76.88083470620539
     },
     "e2e_tokens_per_sec": {
-      "p50": 4.96785090769733,
-      "p70": 5.060158965527939,
-      "p95": 6.173392114091568,
-      "mean": 4.595956051978055,
-      "min": 0.9570293808019905,
-      "max": 7.1460838184588455
+      "p50": 25.247515824782244,
+      "p70": 27.371174378565026,
+      "p95": 35.69291126260497,
+      "mean": 22.001773232858454,
+      "min": 3.952204671505922,
+      "max": 36.52015129776966
     }
   },
   "per_language_statistics": {
     "en": {
-      "p50": 3299.93,
-      "p70": 3461.83,
-      "p95": 3664.205,
-      "mean": 3225.976666666667,
-      "min": 2673.32,
-      "max": 3704.68
+      "p50": 452.07,
+      "p70": 464.686,
+      "p95": 480.456,
+      "mean": 443.29,
+      "min": 394.19,
+      "max": 483.61
     },
     "hi": {
-      "p50": 5461.84,
-      "p70": 5961.432,
-      "p95": 6585.922,
-      "mean": 5060.9766666666665,
-      "min": 3010.27,
-      "max": 6710.82
+      "p50": 2651.72,
+      "p70": 2752.8399999999997,
+      "p95": 2879.24,
+      "mean": 2087.7066666666665,
+      "min": 706.88,
+      "max": 2904.52
     },
     "bn": {
-      "p50": 3147.45,
-      "p70": 3548.4619999999995,
-      "p95": 4049.7269999999994,
-      "mean": 3370.74,
-      "min": 2814.79,
-      "max": 4149.98
+      "p50": 542.12,
+      "p70": 632.3919999999999,
+      "p95": 745.232,
+      "mean": 611.4966666666666,
+      "min": 524.57,
+      "max": 767.8
     },
     "ta": {
-      "p50": 2869.42,
-      "p70": 2989.824,
-      "p95": 3140.3289999999997,
-      "mean": 2965.73,
-      "min": 2857.34,
-      "max": 3170.43
+      "p50": 524.27,
+      "p70": 614.698,
+      "p95": 727.7330000000001,
+      "mean": 595.0166666666668,
+      "min": 510.44,
+      "max": 750.34
     },
     "te": {
-      "p50": 2907.79,
-      "p70": 3008.3379999999997,
-      "p95": 3134.0229999999997,
-      "mean": 2933.2099999999996,
-      "min": 2732.68,
-      "max": 3159.16
+      "p50": 556.85,
+      "p70": 558.842,
+      "p95": 561.332,
+      "mean": 540.9066666666668,
+      "min": 504.04,
+      "max": 561.83
     },
     "mr": {
-      "p50": 4016.18,
-      "p70": 4386.848,
-      "p95": 4850.183,
-      "mean": 3878.4833333333336,
-      "min": 2676.42,
-      "max": 4942.85
+      "p50": 774.25,
+      "p70": 1567.6779999999999,
+      "p95": 2559.4629999999997,
+      "mean": 1349.3133333333333,
+      "min": 515.87,
+      "max": 2757.82
     },
     "gu": {
-      "p50": 2892.9,
-      "p70": 2917.568,
-      "p95": 2948.4030000000002,
-      "mean": 2903.8733333333334,
-      "min": 2864.15,
-      "max": 2954.57
+      "p50": 545.83,
+      "p70": 575.6940000000001,
+      "p95": 613.024,
+      "mean": 552.1633333333334,
+      "min": 490.17,
+      "max": 620.49
     },
     "kn": {
-      "p50": 2906.66,
-      "p70": 2972.224,
-      "p95": 3054.179,
-      "mean": 2904.51,
-      "min": 2736.3,
-      "max": 3070.57
+      "p50": 714.73,
+      "p70": 742.75,
+      "p95": 777.775,
+      "mean": 659.7733333333333,
+      "min": 479.81,
+      "max": 784.78
     },
     "ml": {
-      "p50": 2836.99,
-      "p70": 2869.5739999999996,
-      "p95": 2910.3039999999996,
-      "mean": 2847.72,
-      "min": 2787.72,
-      "max": 2918.45
+      "p50": 622.21,
+      "p70": 625.3100000000001,
+      "p95": 629.1850000000001,
+      "mean": 550.3166666666667,
+      "min": 398.78,
+      "max": 629.96
     },
     "pa": {
-      "p50": 2799.91,
-      "p70": 2814.162,
-      "p95": 2831.977,
-      "mean": 2808.3333333333335,
-      "min": 2789.55,
-      "max": 2835.54
+      "p50": 535.79,
+      "p70": 581.534,
+      "p95": 638.7139999999999,
+      "mean": 555.7966666666667,
+      "min": 481.45,
+      "max": 650.15
     },
     "or": {
-      "p50": 2835.27,
-      "p70": 2948.086,
-      "p95": 3089.1059999999998,
-      "mean": 2871.0533333333333,
-      "min": 2660.58,
-      "max": 3117.31
+      "p50": 546.0,
+      "p70": 556.748,
+      "p95": 570.183,
+      "mean": 512.8833333333333,
+      "min": 419.78,
+      "max": 572.87
     },
     "as": {
-      "p50": 3104.76,
-      "p70": 3163.588,
-      "p95": 3237.123,
-      "mean": 3001.4600000000005,
-      "min": 2647.79,
-      "max": 3251.83
+      "p50": 566.48,
+      "p70": 615.964,
+      "p95": 677.8190000000001,
+      "mean": 582.5633333333334,
+      "min": 491.02,
+      "max": 690.19
     },
     "ne": {
-      "p50": 4214.07,
-      "p70": 4342.022,
-      "p95": 4501.9619999999995,
-      "mean": 3842.6,
-      "min": 2779.78,
-      "max": 4533.95
+      "p50": 1571.87,
+      "p70": 1782.1539999999998,
+      "p95": 2045.0089999999998,
+      "mean": 1388.4766666666667,
+      "min": 495.98,
+      "max": 2097.58
     },
     "sa": {
-      "p50": 5219.14,
-      "p70": 5339.332,
-      "p95": 5489.572,
-      "mean": 4641.676666666666,
-      "min": 3186.27,
-      "max": 5519.62
+      "p50": 2611.96,
+      "p70": 2668.744,
+      "p95": 2739.724,
+      "mean": 2047.0666666666668,
+      "min": 775.32,
+      "max": 2753.92
     },
     "ur": {
-      "p50": 3757.81,
-      "p70": 3832.47,
-      "p95": 3925.795,
-      "mean": 3768.58,
-      "min": 3603.47,
-      "max": 3944.46
+      "p50": 1146.3,
+      "p70": 1272.676,
+      "p95": 1430.646,
+      "mean": 1073.3566666666666,
+      "min": 611.53,
+      "max": 1462.24
     }
   },
   "token_generation_statistics": {
     "generated_tokens": {
       "p50": 14.0,
       "p70": 14.0,
-      "p95": 28.0,
-      "mean": 15.377777777777778,
+      "p95": 28.799999999999997,
+      "mean": 15.177777777777777,
       "min": 3.0,
       "max": 34.0
     },
     "gen_tokens_per_sec": {
-      "p50": 43.44857550741729,
-      "p70": 60.95517923032801,
-      "p95": 67.66536044246935,
-      "mean": 40.90602669367583,
-      "min": 7.545840983977665,
-      "max": 71.76175098672407
+      "p50": 66.85449596485364,
+      "p70": 71.00588464861902,
+      "p95": 75.23982925528485,
+      "mean": 49.5330011799587,
+      "min": 8.7333702075631,
+      "max": 76.88083470620539
     },
     "e2e_tokens_per_sec": {
-      "p50": 4.96785090769733,
-      "p70": 5.060158965527939,
-      "p95": 6.173392114091568,
-      "mean": 4.595956051978055,
-      "min": 0.9570293808019905,
-      "max": 7.1460838184588455
+      "p50": 25.247515824782244,
+      "p70": 27.371174378565026,
+      "p95": 35.69291126260497,
+      "mean": 22.001773232858454,
+      "min": 3.952204671505922,
+      "max": 36.52015129776966
     }
   },
   "bm25_discrepancy_analysis": {
     "index_42_docs": {
       "doc_count": 42,
-      "inner_search_ms": 0.1454,
-      "outer_total_ms": 0.1753
+      "inner_search_ms": 0.1504,
+      "outer_total_ms": 0.1838
     },
     "index_12600_docs": {
       "doc_count": 12600,
-      "tokenization_ms": 0.03,
-      "bm25_scoring_ms": 34.5036,
-      "top_k_sorting_ms": 7.9594,
-      "total_retrieval_ms": 42.493
+      "tokenization_ms": 0.0133,
+      "bm25_scoring_ms": 13.6135,
+      "top_k_sorting_ms": 3.1039,
+      "total_retrieval_ms": 16.7307
     },
     "root_cause_explanation": "The discrepancy between 0.12 ms and ~56 ms is caused by two distinct factors:\n1. Corpus Size Scaling: The 0.12 ms benchmark searched the active baseline index (42 docs in indexes/bm25.pkl), whereas the earlier ~56 ms benchmark searched the full 12,600-passage development corpus.\n2. Implementation Efficiency: In pure Python BM25Okapi, get_scores() scales linearly O(N_docs). For 42 docs it executes in 0.12 ms; for 12,600 docs in an un-cached run with regex tokenization it takes 10–56 ms."
   },
@@ -313,24 +313,24 @@
       "top_source_snippet": "কলকাতা হলো ভারতের পশ্চিমবঙ্গ রাজ্যের রাজধানী, যা হুগলি নদীর পূর্ব তীরে অবস্থিত।",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 31.6,
-        "bm25_retrieval_ms": 0.33,
-        "vector_retrieval_ms": 0.11,
-        "hybrid_fusion_ms": 0.11,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 10.02,
+        "bm25_retrieval_ms": 0.11,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.05,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 3434.75,
-        "llm_generation_ms": 237.14,
+        "llm_ttft_ms": 278.83,
+        "llm_generation_ms": 194.29,
         "grounding_check_ms": 0.0,
-        "total_ms": 3704.68,
+        "total_ms": 483.61,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 59.04,
-        "e2e_tokens_per_sec": 3.81
+        "gen_tokens_per_sec": 72.06,
+        "e2e_tokens_per_sec": 29.59
       }
     },
     {
@@ -349,24 +349,24 @@
       "top_source_snippet": "સુરત ભારતના ડાયમંડ સિટી તરીકે ઓળખાય છે, જે હીરા કટીંગ અને કાપડ ઉદ્યોગો માટે પ્રખ્યાત છે.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.19,
-        "query_embed_ms": 319.71,
-        "bm25_retrieval_ms": 1.1,
-        "vector_retrieval_ms": 0.35,
-        "hybrid_fusion_ms": 0.15,
+        "input_guardrails_ms": 0.07,
+        "query_embed_ms": 9.52,
+        "bm25_retrieval_ms": 0.11,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.04,
-        "llm_ttft_ms": 2521.82,
-        "llm_generation_ms": 455.01,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 239.37,
+        "llm_generation_ms": 202.71,
         "grounding_check_ms": 0.0,
-        "total_ms": 3299.93,
+        "total_ms": 452.07,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 30.77,
-        "e2e_tokens_per_sec": 4.7
+        "gen_tokens_per_sec": 69.06,
+        "e2e_tokens_per_sec": 31.67
       }
     },
     {
@@ -385,24 +385,24 @@
       "top_source_snippet": "Rabindranath Tagore was a Bengali polymath who reshaped Bengali literature and music. In 1913, he became the first non-E",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.1,
-        "query_embed_ms": 34.05,
-        "bm25_retrieval_ms": 0.24,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 9.21,
+        "bm25_retrieval_ms": 0.09,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2383.94,
-        "llm_generation_ms": 254.42,
+        "prompt_construction_ms": 0.0,
+        "llm_ttft_ms": 183.69,
+        "llm_generation_ms": 200.87,
         "grounding_check_ms": 0.0,
-        "total_ms": 2673.32,
+        "total_ms": 394.19,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 55.03,
-        "e2e_tokens_per_sec": 5.31
+        "gen_tokens_per_sec": 69.7,
+        "e2e_tokens_per_sec": 36.41
       }
     },
     {
@@ -421,24 +421,24 @@
       "top_source_snippet": "नई दिल्ली भारत की राजधानी है और दिल्ली के राष्ट्रीय राजधानी क्षेत्र का हिस्सा है। इस शहर की आधारशिला 1911 में दिल्ली दरब",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.06,
-        "query_embed_ms": 48.87,
-        "bm25_retrieval_ms": 0.19,
-        "vector_retrieval_ms": 0.08,
-        "hybrid_fusion_ms": 0.04,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 10.77,
+        "bm25_retrieval_ms": 0.12,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2661.4,
-        "llm_generation_ms": 299.15,
-        "grounding_check_ms": 0.09,
-        "total_ms": 3010.27,
+        "llm_ttft_ms": 403.67,
+        "llm_generation_ms": 291.93,
+        "grounding_check_ms": 0.04,
+        "total_ms": 706.88,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 6,
-        "gen_tokens_per_sec": 20.06,
-        "e2e_tokens_per_sec": 2.03
+        "gen_tokens_per_sec": 20.55,
+        "e2e_tokens_per_sec": 8.63
       }
     },
     {
@@ -446,7 +446,7 @@
       "language_code": "hi",
       "language_name": "Hindi",
       "query": "प्रकाश संश्लेषण की प्रक्रिया कैसे काम करती है?",
-      "answer": "मुझे प्रकाश संश्लेषण के बारे में जानकारी नहीं मिली है। मैं दिए गए स्रोतों से इस विषय पर जानकारी नहीं प्राप्त कर सकता हूँ। मुझे इस प्रश्न के लिए प्राप्त तथ्यों के अभाव म",
+      "answer": "मुझे प्रकाश संश्लेषण के बारे में जानकारी नहीं मिली है। मैं दिए गए स्रोतों से इस विषय पर जानकारी नहीं प्राप्त कर सकता हूँ। इसलिए, मैं इस प्रश्न के उत्तर देने के लिए प्र",
       "is_refusal": true,
       "grounding_score": 0.1,
       "sources_count": 2,
@@ -457,24 +457,24 @@
       "top_source_snippet": "मुंबई भारत की वित्तीय राजधानी है, जो बॉलीवुड और व्यापार के लिए जानी जाती है, जो अरब सागर के तट पर महाराष्ट्र राज्य में स",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 53.22,
-        "bm25_retrieval_ms": 0.47,
-        "vector_retrieval_ms": 3.17,
-        "hybrid_fusion_ms": 0.08,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 12.28,
+        "bm25_retrieval_ms": 0.22,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2740.64,
-        "llm_generation_ms": 2663.45,
-        "grounding_check_ms": 0.03,
-        "total_ms": 5461.84,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 437.37,
+        "llm_generation_ms": 2454.26,
+        "grounding_check_ms": 0.01,
+        "total_ms": 2904.52,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 34,
-        "gen_tokens_per_sec": 12.77,
-        "e2e_tokens_per_sec": 6.29
+        "gen_tokens_per_sec": 13.85,
+        "e2e_tokens_per_sec": 11.76
       }
     },
     {
@@ -482,7 +482,7 @@
       "language_code": "hi",
       "language_name": "Hindi",
       "query": "सौर मंडल का सबसे बड़ा ग्रह कौन सा है?",
-      "answer": "मैं निर्धारित स्रोतों में सौर मंडल के बारे में कोई जानकारी नहीं पाया है। मैं इस प्रश्न के लिए प्राप्त स्रोतों में जानकारी नहीं देख सकता। इसलिए, मैं इस प्रश्न के लिए प्र",
+      "answer": "मैं निर्धारित स्रोतों में सौर मंडल के बारे में कोई जानकारी नहीं पाया है। मैं इस प्रश्न के उत्तर देने के लिए पर्याप्त जानकारी नहीं प्राप्त कर सकता हूं।",
       "is_refusal": true,
       "grounding_score": 0.1,
       "sources_count": 2,
@@ -493,24 +493,24 @@
       "top_source_snippet": "नई दिल्ली में राजपथ पर स्थित राष्ट्रपति भवन, भारत के राष्ट्रपति का आधिकारिक निवास है।",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 36.09,
-        "bm25_retrieval_ms": 0.55,
-        "vector_retrieval_ms": 0.11,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.02,
+        "query_embed_ms": 8.27,
+        "bm25_retrieval_ms": 0.31,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 4078.11,
-        "llm_generation_ms": 2595.21,
-        "grounding_check_ms": 0.03,
-        "total_ms": 6710.82,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 533.36,
+        "llm_generation_ms": 2109.44,
+        "grounding_check_ms": 0.01,
+        "total_ms": 2651.72,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
-        "generated_tokens": 33,
-        "gen_tokens_per_sec": 12.72,
-        "e2e_tokens_per_sec": 4.95
+        "generated_tokens": 29,
+        "gen_tokens_per_sec": 13.75,
+        "e2e_tokens_per_sec": 10.97
       }
     },
     {
@@ -529,24 +529,24 @@
       "top_source_snippet": "কলকাতা হলো ভারতের পশ্চিমবঙ্গ রাজ্যের রাজধানী, যা হুগলি নদীর পূর্ব তীরে অবস্থিত।",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 36.77,
-        "bm25_retrieval_ms": 0.29,
-        "vector_retrieval_ms": 0.13,
-        "hybrid_fusion_ms": 0.08,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 8.23,
+        "bm25_retrieval_ms": 0.09,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.04,
-        "llm_ttft_ms": 2799.11,
-        "llm_generation_ms": 310.32,
-        "grounding_check_ms": 0.09,
-        "total_ms": 3147.45,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 475.51,
+        "llm_generation_ms": 283.56,
+        "grounding_check_ms": 0.05,
+        "total_ms": 767.8,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 3,
-        "gen_tokens_per_sec": 9.67,
-        "e2e_tokens_per_sec": 0.96
+        "gen_tokens_per_sec": 10.58,
+        "e2e_tokens_per_sec": 3.95
       }
     },
     {
@@ -565,24 +565,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 34.66,
-        "bm25_retrieval_ms": 0.3,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 13.15,
+        "bm25_retrieval_ms": 0.16,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2566.39,
-        "llm_generation_ms": 212.7,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 302.63,
+        "llm_generation_ms": 208.24,
         "grounding_check_ms": 0.0,
-        "total_ms": 2814.79,
+        "total_ms": 524.57,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 65.82,
-        "e2e_tokens_per_sec": 5.04
+        "gen_tokens_per_sec": 67.23,
+        "e2e_tokens_per_sec": 27.4
       }
     },
     {
@@ -601,24 +601,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.05,
-        "query_embed_ms": 35.36,
-        "bm25_retrieval_ms": 0.27,
-        "vector_retrieval_ms": 0.12,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 9.5,
+        "bm25_retrieval_ms": 0.16,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 3885.33,
-        "llm_generation_ms": 228.32,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 335.63,
+        "llm_generation_ms": 196.43,
         "grounding_check_ms": 0.0,
-        "total_ms": 4149.98,
+        "total_ms": 542.12,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 61.32,
-        "e2e_tokens_per_sec": 3.4
+        "gen_tokens_per_sec": 71.27,
+        "e2e_tokens_per_sec": 26.31
       }
     },
     {
@@ -637,24 +637,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 34.59,
-        "bm25_retrieval_ms": 0.23,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 11.66,
+        "bm25_retrieval_ms": 0.08,
+        "vector_retrieval_ms": 0.05,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2737.13,
-        "llm_generation_ms": 397.57,
-        "grounding_check_ms": 0.14,
-        "total_ms": 3170.43,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 394.75,
+        "llm_generation_ms": 343.51,
+        "grounding_check_ms": 0.03,
+        "total_ms": 750.34,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 3,
-        "gen_tokens_per_sec": 7.55,
-        "e2e_tokens_per_sec": 0.96
+        "gen_tokens_per_sec": 8.73,
+        "e2e_tokens_per_sec": 4.06
       }
     },
     {
@@ -673,24 +673,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.09,
-        "query_embed_ms": 53.18,
-        "bm25_retrieval_ms": 0.24,
-        "vector_retrieval_ms": 0.14,
-        "hybrid_fusion_ms": 0.07,
-        "reranker_ms": 0.01,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2539.34,
-        "llm_generation_ms": 261.46,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 9.8,
+        "bm25_retrieval_ms": 0.13,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
+        "reranker_ms": 0.0,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 318.0,
+        "llm_generation_ms": 195.97,
         "grounding_check_ms": 0.0,
-        "total_ms": 2857.34,
+        "total_ms": 524.27,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 53.55,
-        "e2e_tokens_per_sec": 5.0
+        "gen_tokens_per_sec": 71.44,
+        "e2e_tokens_per_sec": 27.24
       }
     },
     {
@@ -709,24 +709,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.09,
-        "query_embed_ms": 34.43,
-        "bm25_retrieval_ms": 0.28,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 10.12,
+        "bm25_retrieval_ms": 0.12,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.04,
-        "llm_ttft_ms": 2607.19,
-        "llm_generation_ms": 226.71,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 314.75,
+        "llm_generation_ms": 185.04,
         "grounding_check_ms": 0.0,
-        "total_ms": 2869.42,
+        "total_ms": 510.44,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 61.75,
-        "e2e_tokens_per_sec": 4.94
+        "gen_tokens_per_sec": 75.66,
+        "e2e_tokens_per_sec": 28.01
       }
     },
     {
@@ -745,24 +745,24 @@
       "top_source_snippet": "কলকাতা হলো ভারতের পশ্চিমবঙ্গ রাজ্যের রাজধানী, যা হুগলি নদীর পূর্ব তীরে অবস্থিত।",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 42.45,
-        "bm25_retrieval_ms": 0.26,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.09,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 13.25,
+        "bm25_retrieval_ms": 0.12,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2440.27,
-        "llm_generation_ms": 248.94,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 330.43,
+        "llm_generation_ms": 212.63,
         "grounding_check_ms": 0.0,
-        "total_ms": 2732.68,
+        "total_ms": 556.85,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 56.24,
-        "e2e_tokens_per_sec": 5.21
+        "gen_tokens_per_sec": 65.84,
+        "e2e_tokens_per_sec": 25.78
       }
     },
     {
@@ -781,24 +781,24 @@
       "top_source_snippet": "విశాఖపట్నం ఆంధ్రప్రదేశ్ తీరంలో ఉన్న ఒక ప్రధాన ఓడరేవు నగరం మరియు వాణిజ్య కేంద్రం.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.09,
-        "query_embed_ms": 34.01,
-        "bm25_retrieval_ms": 0.27,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 12.13,
+        "bm25_retrieval_ms": 0.14,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2653.77,
-        "llm_generation_ms": 218.73,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 286.77,
+        "llm_generation_ms": 204.58,
         "grounding_check_ms": 0.0,
-        "total_ms": 2907.79,
+        "total_ms": 504.04,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 64.01,
-        "e2e_tokens_per_sec": 4.87
+        "gen_tokens_per_sec": 68.43,
+        "e2e_tokens_per_sec": 28.49
       }
     },
     {
@@ -817,24 +817,24 @@
       "top_source_snippet": "హైదరాబాద్ భారతదేశంలోని తెలంగాణ రాష్ట్ర రాజధాని మరియు అతిపెద్ద నగరం. ముత్యాల నగరంగా పిలువబడే ఇది ప్రముఖ సాంకేతిక మరియు ఔష",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.1,
-        "query_embed_ms": 35.86,
-        "bm25_retrieval_ms": 0.31,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 12.24,
+        "bm25_retrieval_ms": 0.11,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.06,
-        "llm_ttft_ms": 2630.12,
-        "llm_generation_ms": 491.75,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 347.23,
+        "llm_generation_ms": 201.92,
         "grounding_check_ms": 0.0,
-        "total_ms": 3159.16,
+        "total_ms": 561.83,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 28.47,
-        "e2e_tokens_per_sec": 4.48
+        "gen_tokens_per_sec": 69.33,
+        "e2e_tokens_per_sec": 25.49
       }
     },
     {
@@ -853,24 +853,24 @@
       "top_source_snippet": "मुंबई ही भारताच्या महाराष्ट्र राज्याची राजधानी आहे. ही भारताची आर्थिक, व्यावसायिक आणि मनोरंजनाची राजधानी आहे.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 32.53,
-        "bm25_retrieval_ms": 0.2,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 11.55,
+        "bm25_retrieval_ms": 0.13,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.05,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 3636.64,
-        "llm_generation_ms": 345.78,
-        "grounding_check_ms": 0.12,
-        "total_ms": 4016.18,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 470.15,
+        "llm_generation_ms": 292.0,
+        "grounding_check_ms": 0.04,
+        "total_ms": 774.25,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 4,
-        "gen_tokens_per_sec": 11.57,
-        "e2e_tokens_per_sec": 1.0
+        "gen_tokens_per_sec": 13.7,
+        "e2e_tokens_per_sec": 5.25
       }
     },
     {
@@ -878,7 +878,7 @@
       "language_code": "mr",
       "language_name": "Marathi",
       "query": "प्रकाशसंश्लेषण प्रक्रिया कशी कार्य करते?",
-      "answer": "मैं उपलब्ध स्रोतों में प्रकाशसंश्लेषण प्रक्रिया के बारे में कोई जानकारी नहीं पाया हूँ। मैं इस प्रश्न के उत्तर देने के लिए पर्याप्त जानकारी नहीं प्राप्त कर सकता।",
+      "answer": "मैं उपलब्ध स्रोतों में प्रकाशसंश्लेषण प्रक्रिया के बारे में कोई जानकारी नहीं पाया हूं। मैं इस प्रश्न के उत्तर देने के लिए पर्याप्त जानकारी नहीं प्राप्त कर सकता।",
       "is_refusal": true,
       "grounding_score": 0.1,
       "sources_count": 0,
@@ -889,24 +889,24 @@
       "top_source_snippet": null,
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 30.23,
-        "bm25_retrieval_ms": 0.26,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 10.73,
+        "bm25_retrieval_ms": 0.09,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.02,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.07,
-        "llm_ttft_ms": 2558.49,
-        "llm_generation_ms": 2353.07,
-        "grounding_check_ms": 0.02,
-        "total_ms": 4942.85,
+        "prompt_construction_ms": 0.0,
+        "llm_ttft_ms": 402.96,
+        "llm_generation_ms": 2341.67,
+        "grounding_check_ms": 0.22,
+        "total_ms": 2757.82,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 28,
-        "gen_tokens_per_sec": 11.9,
-        "e2e_tokens_per_sec": 5.7
+        "gen_tokens_per_sec": 11.96,
+        "e2e_tokens_per_sec": 10.2
       }
     },
     {
@@ -925,24 +925,24 @@
       "top_source_snippet": "नागपूर ही हिवाळी राजधानी आणि महाराष्ट्र राज्यातील तिसरे सर्वात मोठे शहर आहे.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 35.61,
-        "bm25_retrieval_ms": 0.41,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.53,
+        "query_embed_ms": 129.72,
+        "bm25_retrieval_ms": 0.57,
+        "vector_retrieval_ms": 0.23,
+        "hybrid_fusion_ms": 0.12,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2419.65,
-        "llm_generation_ms": 219.99,
+        "prompt_construction_ms": 0.02,
+        "llm_ttft_ms": 189.4,
+        "llm_generation_ms": 193.95,
         "grounding_check_ms": 0.0,
-        "total_ms": 2676.42,
+        "total_ms": 515.87,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 63.64,
-        "e2e_tokens_per_sec": 5.3
+        "gen_tokens_per_sec": 72.18,
+        "e2e_tokens_per_sec": 36.52
       }
     },
     {
@@ -961,24 +961,24 @@
       "top_source_snippet": "ગાંધીનગર ગુજરાતની રાજધાની છે, જેનું નામ મહાત્મા ગાંધીના નામ પરથી રાખવામાં આવ્યું છે.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 37.8,
-        "bm25_retrieval_ms": 0.25,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 12.96,
+        "bm25_retrieval_ms": 0.14,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.06,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2486.68,
-        "llm_generation_ms": 367.32,
-        "grounding_check_ms": 0.01,
-        "total_ms": 2892.9,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 280.39,
+        "llm_generation_ms": 196.23,
+        "grounding_check_ms": 0.0,
+        "total_ms": 490.17,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 38.11,
-        "e2e_tokens_per_sec": 4.91
+        "gen_tokens_per_sec": 71.34,
+        "e2e_tokens_per_sec": 29.37
       }
     },
     {
@@ -997,24 +997,24 @@
       "top_source_snippet": "রবীন্দ্রনাথ ঠাকুর ছিলেন একজন বাঙালি বহুবিদ্যাবিশারদ যিনি বাংলা সাহিত্য ও সঙ্গীতকে নতুন রূপ দিয়েছিলেন। ১৯১৩ সালে গীতাঞ্জ",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.19,
-        "query_embed_ms": 51.54,
-        "bm25_retrieval_ms": 0.51,
-        "vector_retrieval_ms": 0.15,
-        "hybrid_fusion_ms": 0.08,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 10.48,
+        "bm25_retrieval_ms": 0.17,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.03,
-        "llm_ttft_ms": 2579.0,
-        "llm_generation_ms": 322.22,
-        "grounding_check_ms": 0.01,
-        "total_ms": 2954.57,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 412.52,
+        "llm_generation_ms": 196.92,
+        "grounding_check_ms": 0.0,
+        "total_ms": 620.49,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 43.45,
-        "e2e_tokens_per_sec": 4.83
+        "gen_tokens_per_sec": 71.09,
+        "e2e_tokens_per_sec": 22.97
       }
     },
     {
@@ -1033,24 +1033,24 @@
       "top_source_snippet": "સુરત ભારતના ડાયમંડ સિટી તરીકે ઓળખાય છે, જે હીરા કટીંગ અને કાપડ ઉદ્યોગો માટે પ્રખ્યાત છે.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.13,
-        "query_embed_ms": 37.06,
-        "bm25_retrieval_ms": 0.35,
-        "vector_retrieval_ms": 0.11,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 11.57,
+        "bm25_retrieval_ms": 0.18,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2619.43,
-        "llm_generation_ms": 206.48,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 344.08,
+        "llm_generation_ms": 189.6,
         "grounding_check_ms": 0.0,
-        "total_ms": 2864.15,
+        "total_ms": 545.83,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 67.8,
-        "e2e_tokens_per_sec": 4.95
+        "gen_tokens_per_sec": 73.84,
+        "e2e_tokens_per_sec": 26.23
       }
     },
     {
@@ -1069,24 +1069,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.05,
-        "query_embed_ms": 19.33,
-        "bm25_retrieval_ms": 0.13,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 9.18,
+        "bm25_retrieval_ms": 0.12,
         "vector_retrieval_ms": 0.06,
-        "hybrid_fusion_ms": 0.04,
+        "hybrid_fusion_ms": 0.05,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2480.88,
-        "llm_generation_ms": 235.27,
-        "grounding_check_ms": 0.01,
-        "total_ms": 2736.3,
+        "llm_ttft_ms": 574.51,
+        "llm_generation_ms": 200.59,
+        "grounding_check_ms": 0.0,
+        "total_ms": 784.78,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 59.51,
-        "e2e_tokens_per_sec": 5.15
+        "gen_tokens_per_sec": 69.79,
+        "e2e_tokens_per_sec": 18.06
       }
     },
     {
@@ -1105,24 +1105,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.25,
-        "query_embed_ms": 156.02,
-        "bm25_retrieval_ms": 0.76,
-        "vector_retrieval_ms": 0.32,
-        "hybrid_fusion_ms": 0.24,
+        "input_guardrails_ms": 0.06,
+        "query_embed_ms": 13.45,
+        "bm25_retrieval_ms": 0.12,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.05,
-        "llm_ttft_ms": 2652.5,
-        "llm_generation_ms": 259.36,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 265.19,
+        "llm_generation_ms": 200.57,
         "grounding_check_ms": 0.0,
-        "total_ms": 3070.57,
+        "total_ms": 479.81,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 53.98,
-        "e2e_tokens_per_sec": 4.81
+        "gen_tokens_per_sec": 69.8,
+        "e2e_tokens_per_sec": 30.06
       }
     },
     {
@@ -1141,24 +1141,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 18.53,
-        "bm25_retrieval_ms": 0.25,
-        "vector_retrieval_ms": 0.1,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.08,
+        "query_embed_ms": 17.97,
+        "bm25_retrieval_ms": 0.26,
+        "vector_retrieval_ms": 0.09,
+        "hybrid_fusion_ms": 0.06,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2692.15,
-        "llm_generation_ms": 195.09,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 486.51,
+        "llm_generation_ms": 209.41,
         "grounding_check_ms": 0.0,
-        "total_ms": 2906.66,
+        "total_ms": 714.73,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 71.76,
-        "e2e_tokens_per_sec": 4.85
+        "gen_tokens_per_sec": 66.85,
+        "e2e_tokens_per_sec": 20.12
       }
     },
     {
@@ -1177,24 +1177,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.1,
-        "query_embed_ms": 21.69,
-        "bm25_retrieval_ms": 0.17,
-        "vector_retrieval_ms": 0.11,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 8.77,
+        "bm25_retrieval_ms": 0.08,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2370.01,
-        "llm_generation_ms": 394.94,
-        "grounding_check_ms": 0.01,
-        "total_ms": 2787.72,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 196.97,
+        "llm_generation_ms": 192.63,
+        "grounding_check_ms": 0.0,
+        "total_ms": 398.78,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 35.45,
-        "e2e_tokens_per_sec": 5.06
+        "gen_tokens_per_sec": 72.68,
+        "e2e_tokens_per_sec": 35.93
       }
     },
     {
@@ -1213,24 +1213,24 @@
       "top_source_snippet": "విశాఖపట్నం ఆంధ్రప్రదేశ్ తీరంలో ఉన్న ఒక ప్రధాన ఓడరేవు నగరం మరియు వాణిజ్య కేంద్రం.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.22,
-        "query_embed_ms": 49.5,
-        "bm25_retrieval_ms": 0.3,
-        "vector_retrieval_ms": 0.2,
-        "hybrid_fusion_ms": 0.08,
+        "input_guardrails_ms": 0.07,
+        "query_embed_ms": 11.28,
+        "bm25_retrieval_ms": 0.1,
+        "vector_retrieval_ms": 0.07,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2655.66,
-        "llm_generation_ms": 211.8,
-        "grounding_check_ms": 0.0,
-        "total_ms": 2918.45,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 243.26,
+        "llm_generation_ms": 374.54,
+        "grounding_check_ms": 0.01,
+        "total_ms": 629.96,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 66.1,
-        "e2e_tokens_per_sec": 4.88
+        "gen_tokens_per_sec": 37.38,
+        "e2e_tokens_per_sec": 22.66
       }
     },
     {
@@ -1249,24 +1249,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.09,
-        "query_embed_ms": 22.92,
-        "bm25_retrieval_ms": 0.24,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.47,
+        "query_embed_ms": 52.71,
+        "bm25_retrieval_ms": 0.45,
+        "vector_retrieval_ms": 0.14,
+        "hybrid_fusion_ms": 0.1,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.36,
-        "llm_ttft_ms": 2596.7,
-        "llm_generation_ms": 216.19,
+        "prompt_construction_ms": 0.03,
+        "llm_ttft_ms": 342.72,
+        "llm_generation_ms": 224.71,
         "grounding_check_ms": 0.0,
-        "total_ms": 2836.99,
+        "total_ms": 622.21,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 64.76,
-        "e2e_tokens_per_sec": 4.98
+        "gen_tokens_per_sec": 62.3,
+        "e2e_tokens_per_sec": 24.67
       }
     },
     {
@@ -1285,24 +1285,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.04,
-        "query_embed_ms": 16.32,
-        "bm25_retrieval_ms": 0.22,
-        "vector_retrieval_ms": 0.07,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.1,
+        "query_embed_ms": 37.21,
+        "bm25_retrieval_ms": 0.56,
+        "vector_retrieval_ms": 0.14,
+        "hybrid_fusion_ms": 0.13,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2371.9,
-        "llm_generation_ms": 446.22,
-        "grounding_check_ms": 0.01,
-        "total_ms": 2835.54,
+        "prompt_construction_ms": 0.03,
+        "llm_ttft_ms": 420.55,
+        "llm_generation_ms": 190.84,
+        "grounding_check_ms": 0.0,
+        "total_ms": 650.15,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 31.37,
-        "e2e_tokens_per_sec": 4.97
+        "gen_tokens_per_sec": 73.36,
+        "e2e_tokens_per_sec": 22.9
       }
     },
     {
@@ -1321,24 +1321,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.27,
-        "query_embed_ms": 66.38,
-        "bm25_retrieval_ms": 0.47,
-        "vector_retrieval_ms": 0.14,
-        "hybrid_fusion_ms": 0.11,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 7.73,
+        "bm25_retrieval_ms": 0.11,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.03,
-        "llm_ttft_ms": 2429.34,
-        "llm_generation_ms": 291.93,
-        "grounding_check_ms": 0.0,
-        "total_ms": 2789.55,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 145.67,
+        "llm_generation_ms": 381.33,
+        "grounding_check_ms": 0.02,
+        "total_ms": 535.79,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 47.96,
-        "e2e_tokens_per_sec": 5.14
+        "gen_tokens_per_sec": 36.71,
+        "e2e_tokens_per_sec": 26.57
       }
     },
     {
@@ -1357,24 +1357,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.06,
-        "query_embed_ms": 24.93,
-        "bm25_retrieval_ms": 0.36,
-        "vector_retrieval_ms": 0.08,
-        "hybrid_fusion_ms": 0.06,
+        "input_guardrails_ms": 0.85,
+        "query_embed_ms": 75.34,
+        "bm25_retrieval_ms": 0.47,
+        "vector_retrieval_ms": 0.14,
+        "hybrid_fusion_ms": 0.09,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2569.24,
-        "llm_generation_ms": 204.79,
+        "llm_ttft_ms": 221.04,
+        "llm_generation_ms": 182.1,
         "grounding_check_ms": 0.0,
-        "total_ms": 2799.91,
+        "total_ms": 481.45,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 68.36,
-        "e2e_tokens_per_sec": 5.05
+        "gen_tokens_per_sec": 76.88,
+        "e2e_tokens_per_sec": 34.73
       }
     },
     {
@@ -1393,24 +1393,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.05,
-        "query_embed_ms": 17.16,
-        "bm25_retrieval_ms": 0.11,
-        "vector_retrieval_ms": 0.06,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 8.52,
+        "bm25_retrieval_ms": 0.08,
+        "vector_retrieval_ms": 0.04,
         "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.06,
-        "llm_ttft_ms": 2337.15,
-        "llm_generation_ms": 302.63,
-        "grounding_check_ms": 0.03,
-        "total_ms": 2660.58,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 158.58,
+        "llm_generation_ms": 378.41,
+        "grounding_check_ms": 0.01,
+        "total_ms": 546.0,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 46.26,
-        "e2e_tokens_per_sec": 5.3
+        "gen_tokens_per_sec": 37.0,
+        "e2e_tokens_per_sec": 26.07
       }
     },
     {
@@ -1429,24 +1429,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 1.11,
-        "query_embed_ms": 315.55,
-        "bm25_retrieval_ms": 1.01,
-        "vector_retrieval_ms": 0.18,
-        "hybrid_fusion_ms": 0.15,
+        "input_guardrails_ms": 0.12,
+        "query_embed_ms": 29.3,
+        "bm25_retrieval_ms": 0.3,
+        "vector_retrieval_ms": 0.14,
+        "hybrid_fusion_ms": 0.07,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.04,
-        "llm_ttft_ms": 2580.35,
-        "llm_generation_ms": 217.2,
+        "prompt_construction_ms": 0.02,
+        "llm_ttft_ms": 344.36,
+        "llm_generation_ms": 198.16,
         "grounding_check_ms": 0.0,
-        "total_ms": 3117.31,
+        "total_ms": 572.87,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 64.46,
-        "e2e_tokens_per_sec": 5.0
+        "gen_tokens_per_sec": 70.65,
+        "e2e_tokens_per_sec": 25.81
       }
     },
     {
@@ -1466,23 +1466,23 @@
       "latency": {
         "stt_ms": 0.0,
         "input_guardrails_ms": 0.05,
-        "query_embed_ms": 20.33,
-        "bm25_retrieval_ms": 0.24,
-        "vector_retrieval_ms": 0.07,
-        "hybrid_fusion_ms": 0.05,
+        "query_embed_ms": 11.28,
+        "bm25_retrieval_ms": 0.14,
+        "vector_retrieval_ms": 0.05,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2440.76,
-        "llm_generation_ms": 373.22,
-        "grounding_check_ms": 0.01,
-        "total_ms": 2835.27,
+        "llm_ttft_ms": 213.95,
+        "llm_generation_ms": 194.03,
+        "grounding_check_ms": 0.0,
+        "total_ms": 419.78,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 37.51,
-        "e2e_tokens_per_sec": 4.98
+        "gen_tokens_per_sec": 72.15,
+        "e2e_tokens_per_sec": 34.32
       }
     },
     {
@@ -1501,24 +1501,24 @@
       "top_source_snippet": "சென்னை, முன்னர் மெட்ராஸ் என்று அழைக்கப்பட்டது, தமிழ்நாட்டின் தலைநகரமாகும். வங்காள விரிகுடாவின் கோரமண்டல் கடற்கரையில் அமை",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.22,
-        "query_embed_ms": 104.06,
-        "bm25_retrieval_ms": 0.33,
-        "vector_retrieval_ms": 0.19,
-        "hybrid_fusion_ms": 0.1,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 11.48,
+        "bm25_retrieval_ms": 0.1,
+        "vector_retrieval_ms": 0.05,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.03,
-        "llm_ttft_ms": 2821.32,
-        "llm_generation_ms": 323.9,
-        "grounding_check_ms": 0.02,
-        "total_ms": 3251.83,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 319.31,
+        "llm_generation_ms": 235.2,
+        "grounding_check_ms": 0.0,
+        "total_ms": 566.48,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 43.22,
-        "e2e_tokens_per_sec": 4.45
+        "gen_tokens_per_sec": 59.52,
+        "e2e_tokens_per_sec": 25.25
       }
     },
     {
@@ -1537,24 +1537,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 1.2,
-        "query_embed_ms": 326.1,
-        "bm25_retrieval_ms": 0.66,
-        "vector_retrieval_ms": 0.17,
-        "hybrid_fusion_ms": 0.12,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 14.09,
+        "bm25_retrieval_ms": 0.16,
+        "vector_retrieval_ms": 0.07,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.03,
-        "llm_ttft_ms": 2565.18,
-        "llm_generation_ms": 208.6,
-        "grounding_check_ms": 0.0,
-        "total_ms": 3104.76,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 360.34,
+        "llm_generation_ms": 314.86,
+        "grounding_check_ms": 0.01,
+        "total_ms": 690.19,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 67.11,
-        "e2e_tokens_per_sec": 5.05
+        "gen_tokens_per_sec": 44.46,
+        "e2e_tokens_per_sec": 20.73
       }
     },
     {
@@ -1573,24 +1573,24 @@
       "top_source_snippet": "தஞ்சாவூர் தென்னிந்திய மதம், கலை மற்றும் கட்டிடக்கலையின் ஒரு முக்கிய மையமாகும், இது பிரகதீஸ்வரர் கோவிலுக்கு பிரபலமானது.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.04,
-        "query_embed_ms": 17.59,
-        "bm25_retrieval_ms": 0.14,
-        "vector_retrieval_ms": 0.05,
-        "hybrid_fusion_ms": 0.04,
+        "input_guardrails_ms": 0.25,
+        "query_embed_ms": 49.93,
+        "bm25_retrieval_ms": 0.49,
+        "vector_retrieval_ms": 0.14,
+        "hybrid_fusion_ms": 0.1,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2410.67,
-        "llm_generation_ms": 218.55,
+        "prompt_construction_ms": 0.02,
+        "llm_ttft_ms": 254.15,
+        "llm_generation_ms": 185.21,
         "grounding_check_ms": 0.0,
-        "total_ms": 2647.79,
+        "total_ms": 491.02,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 64.06,
-        "e2e_tokens_per_sec": 5.32
+        "gen_tokens_per_sec": 75.59,
+        "e2e_tokens_per_sec": 31.86
       }
     },
     {
@@ -1609,24 +1609,24 @@
       "top_source_snippet": "नागपूर ही हिवाळी राजधानी आणि महाराष्ट्र राज्यातील तिसरे सर्वात मोठे शहर आहे.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.05,
-        "query_embed_ms": 22.37,
-        "bm25_retrieval_ms": 0.14,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 9.86,
+        "bm25_retrieval_ms": 0.15,
         "vector_retrieval_ms": 0.06,
         "hybrid_fusion_ms": 0.05,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2543.44,
-        "llm_generation_ms": 213.31,
+        "llm_ttft_ms": 294.51,
+        "llm_generation_ms": 191.01,
         "grounding_check_ms": 0.0,
-        "total_ms": 2779.78,
+        "total_ms": 495.98,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 14,
-        "gen_tokens_per_sec": 65.63,
-        "e2e_tokens_per_sec": 5.08
+        "gen_tokens_per_sec": 73.29,
+        "e2e_tokens_per_sec": 28.84
       }
     },
     {
@@ -1634,7 +1634,7 @@
       "language_code": "ne",
       "language_name": "Nepali",
       "query": "प्रकाश संश्लेषण कसरी काम गर्छ?",
-      "answer": "मैं उपलब्ध स्रोतमा प्रकाश संश्लेषण कें बारेमा कुनै जानकारी नहाल छु। म यस प्रश्नको उत्तर देन सक्दै छु नभएको छ।",
+      "answer": "मैं उपलब्ध स्रोतमा प्रकाश संश्लेषण कें बारेमा कुनै जानकारी नभएको छ। म यो प्रश्नको उत्तर दिन सकौं छु नभएको छ।",
       "is_refusal": true,
       "grounding_score": 0.1,
       "sources_count": 0,
@@ -1645,24 +1645,24 @@
       "top_source_snippet": null,
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.06,
-        "query_embed_ms": 23.66,
-        "bm25_retrieval_ms": 0.2,
-        "vector_retrieval_ms": 0.06,
-        "hybrid_fusion_ms": 0.03,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 14.16,
+        "bm25_retrieval_ms": 0.18,
+        "vector_retrieval_ms": 0.07,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.0,
-        "llm_ttft_ms": 2595.09,
-        "llm_generation_ms": 1914.49,
-        "grounding_check_ms": 0.02,
-        "total_ms": 4533.95,
+        "llm_ttft_ms": 436.81,
+        "llm_generation_ms": 1646.04,
+        "grounding_check_ms": 0.01,
+        "total_ms": 2097.58,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 20,
-        "gen_tokens_per_sec": 10.45,
-        "e2e_tokens_per_sec": 4.44
+        "gen_tokens_per_sec": 12.15,
+        "e2e_tokens_per_sec": 9.6
       }
     },
     {
@@ -1670,7 +1670,7 @@
       "language_code": "ne",
       "language_name": "Nepali",
       "query": "सौर्यमण्डलको सबैभन्दा ठूलो ग्रह कुन हो?",
-      "answer": "मैं उपलब्ध स्रोतमा जानकारी नहराइ अछि, त्यसैले म यस प्रश्नको उत्तर दिन सकौं छु नहराइ।",
+      "answer": "मैं उपलब्ध स्रोतमा यो जानकारी नहराइँ गर्न सक्छु। म यो प्रश्नको उत्तर दिन सकौं नहुन्छ।",
       "is_refusal": true,
       "grounding_score": 0.1,
       "sources_count": 0,
@@ -1681,24 +1681,24 @@
       "top_source_snippet": null,
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.08,
-        "query_embed_ms": 40.73,
-        "bm25_retrieval_ms": 0.32,
-        "vector_retrieval_ms": 0.11,
-        "hybrid_fusion_ms": 0.07,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 9.52,
+        "bm25_retrieval_ms": 0.12,
+        "vector_retrieval_ms": 0.05,
+        "hybrid_fusion_ms": 0.02,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.0,
-        "llm_ttft_ms": 2762.66,
-        "llm_generation_ms": 1409.19,
-        "grounding_check_ms": 0.41,
-        "total_ms": 4214.07,
+        "llm_ttft_ms": 307.87,
+        "llm_generation_ms": 1254.04,
+        "grounding_check_ms": 0.01,
+        "total_ms": 1571.87,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 15,
-        "gen_tokens_per_sec": 10.64,
-        "e2e_tokens_per_sec": 3.6
+        "gen_tokens_per_sec": 11.96,
+        "e2e_tokens_per_sec": 9.6
       }
     },
     {
@@ -1717,24 +1717,24 @@
       "top_source_snippet": "नई दिल्ली भारत की राजधानी है और दिल्ली के राष्ट्रीय राजधानी क्षेत्र का हिस्सा है। इस शहर की आधारशिला 1911 में दिल्ली दरब",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.07,
-        "query_embed_ms": 41.48,
-        "bm25_retrieval_ms": 0.32,
-        "vector_retrieval_ms": 0.13,
-        "hybrid_fusion_ms": 0.09,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 11.56,
+        "bm25_retrieval_ms": 0.08,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.02,
-        "llm_ttft_ms": 2794.25,
-        "llm_generation_ms": 349.28,
-        "grounding_check_ms": 0.09,
-        "total_ms": 3186.27,
+        "prompt_construction_ms": 0.01,
+        "llm_ttft_ms": 405.73,
+        "llm_generation_ms": 357.59,
+        "grounding_check_ms": 0.05,
+        "total_ms": 775.32,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 6,
-        "gen_tokens_per_sec": 17.18,
-        "e2e_tokens_per_sec": 1.91
+        "gen_tokens_per_sec": 16.78,
+        "e2e_tokens_per_sec": 7.86
       }
     },
     {
@@ -1753,24 +1753,24 @@
       "top_source_snippet": null,
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.06,
-        "query_embed_ms": 25.32,
-        "bm25_retrieval_ms": 0.17,
-        "vector_retrieval_ms": 0.09,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 14.24,
+        "bm25_retrieval_ms": 0.12,
+        "vector_retrieval_ms": 0.06,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.0,
-        "llm_ttft_ms": 2731.73,
-        "llm_generation_ms": 2460.04,
-        "grounding_check_ms": 0.13,
-        "total_ms": 5219.14,
+        "llm_ttft_ms": 365.86,
+        "llm_generation_ms": 2231.35,
+        "grounding_check_ms": 0.01,
+        "total_ms": 2611.96,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 27,
-        "gen_tokens_per_sec": 10.98,
-        "e2e_tokens_per_sec": 5.2
+        "gen_tokens_per_sec": 12.1,
+        "e2e_tokens_per_sec": 10.4
       }
     },
     {
@@ -1778,7 +1778,7 @@
       "language_code": "sa",
       "language_name": "Sanskrit",
       "query": "सौरमण्डलस्य बृहत्तमः ग्रहः कः?",
-      "answer": "मैं उपलब्ध स्रोतों में इसके बारे में जानकारी नहीं पाया है। मैं इस प्रश्न के उत्तर देने के लिए पर्याप्त जानकारी नहीं प्राप्त कर सकता हूँ।",
+      "answer": "मैं उपलब्ध स्रोतों में सौरमण्डल के बड़े ग्रह के बारे में कोई जानकारी नहीं पाया है। मैं इस प्रश्न के उत्तर देने के लिए पर्याप्त जानकारी नहीं प्राप्त कर सकता हूँ।",
       "is_refusal": true,
       "grounding_score": 0.1,
       "sources_count": 0,
@@ -1789,24 +1789,24 @@
       "top_source_snippet": null,
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.55,
-        "query_embed_ms": 324.78,
-        "bm25_retrieval_ms": 0.31,
-        "vector_retrieval_ms": 0.15,
-        "hybrid_fusion_ms": 0.08,
+        "input_guardrails_ms": 0.03,
+        "query_embed_ms": 11.13,
+        "bm25_retrieval_ms": 0.15,
+        "vector_retrieval_ms": 0.07,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
-        "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2688.56,
-        "llm_generation_ms": 2500.72,
-        "grounding_check_ms": 0.31,
-        "total_ms": 5519.62,
+        "prompt_construction_ms": 0.0,
+        "llm_ttft_ms": 321.1,
+        "llm_generation_ms": 2421.13,
+        "grounding_check_ms": 0.01,
+        "total_ms": 2753.92,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
-        "generated_tokens": 26,
-        "gen_tokens_per_sec": 10.4,
-        "e2e_tokens_per_sec": 5.01
+        "generated_tokens": 31,
+        "gen_tokens_per_sec": 12.8,
+        "e2e_tokens_per_sec": 11.3
       }
     },
     {
@@ -1825,24 +1825,24 @@
       "top_source_snippet": "नागपूर ही हिवाळी राजधानी आणि महाराष्ट्र राज्यातील तिसरे सर्वात मोठे शहर आहे.",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 5.63,
-        "query_embed_ms": 159.09,
-        "bm25_retrieval_ms": 0.21,
-        "vector_retrieval_ms": 0.08,
-        "hybrid_fusion_ms": 0.05,
+        "input_guardrails_ms": 0.04,
+        "query_embed_ms": 8.99,
+        "bm25_retrieval_ms": 0.1,
+        "vector_retrieval_ms": 0.04,
+        "hybrid_fusion_ms": 0.03,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2643.17,
-        "llm_generation_ms": 793.36,
+        "llm_ttft_ms": 302.23,
+        "llm_generation_ms": 834.59,
         "grounding_check_ms": 0.05,
-        "total_ms": 3603.47,
+        "total_ms": 1146.3,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 15,
-        "gen_tokens_per_sec": 18.91,
-        "e2e_tokens_per_sec": 4.36
+        "gen_tokens_per_sec": 17.97,
+        "e2e_tokens_per_sec": 13.19
       }
     },
     {
@@ -1850,9 +1850,9 @@
       "language_code": "ur",
       "language_name": "Urdu",
       "query": "فوٹو سنتھیسس کیسے کام کرتا ہے؟",
-      "answer": "میں نے فوٹو سنتھیسس کے بارے میں کوئی معلومات نہیں پائی ہے۔ میں نے اس کے بارے میں کوئی تکمیلی معلومات نہیں ملی ہے۔",
+      "answer": "I do not have enough information in the retrieved sources to answer this question.",
       "is_refusal": true,
-      "grounding_score": 0.1,
+      "grounding_score": 1.0,
       "sources_count": 1,
       "top_source_id": "f72edd4843128638",
       "top_source_score": 0.2439,
@@ -1861,24 +1861,24 @@
       "top_source_snippet": "সত্যজিৎ রায় ছিলেন কলকাতার একজন ভারতীয় চলচ্চিত্র নির্মাতা, চিত্রনাট্যকার এবং লেখক, যিনি অপু ট্রিলজির জন্য পরিচিত।",
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.04,
-        "query_embed_ms": 26.41,
-        "bm25_retrieval_ms": 0.18,
+        "input_guardrails_ms": 0.05,
+        "query_embed_ms": 11.15,
+        "bm25_retrieval_ms": 0.17,
         "vector_retrieval_ms": 0.06,
-        "hybrid_fusion_ms": 0.03,
+        "hybrid_fusion_ms": 0.04,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.01,
-        "llm_ttft_ms": 2540.83,
-        "llm_generation_ms": 1189.52,
+        "llm_ttft_ms": 262.07,
+        "llm_generation_ms": 337.48,
         "grounding_check_ms": 0.01,
-        "total_ms": 3757.81,
+        "total_ms": 611.53,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
-        "generated_tokens": 24,
-        "gen_tokens_per_sec": 20.18,
-        "e2e_tokens_per_sec": 6.43
+        "generated_tokens": 14,
+        "gen_tokens_per_sec": 41.48,
+        "e2e_tokens_per_sec": 23.35
       }
     },
     {
@@ -1897,24 +1897,24 @@
       "top_source_snippet": null,
       "latency": {
         "stt_ms": 0.0,
-        "input_guardrails_ms": 0.04,
-        "query_embed_ms": 25.63,
-        "bm25_retrieval_ms": 0.24,
-        "vector_retrieval_ms": 0.05,
-        "hybrid_fusion_ms": 0.03,
+        "input_guardrails_ms": 0.28,
+        "query_embed_ms": 52.08,
+        "bm25_retrieval_ms": 0.43,
+        "vector_retrieval_ms": 0.12,
+        "hybrid_fusion_ms": 0.07,
         "reranker_ms": 0.0,
         "prompt_construction_ms": 0.0,
-        "llm_ttft_ms": 2470.11,
-        "llm_generation_ms": 1448.12,
+        "llm_ttft_ms": 226.37,
+        "llm_generation_ms": 1182.36,
         "grounding_check_ms": 0.01,
-        "total_ms": 3944.46,
+        "total_ms": 1462.24,
         "target_achieved_200ms": false,
         "stretch_achieved_150ms": false
       },
       "throughput": {
         "generated_tokens": 28,
-        "gen_tokens_per_sec": 19.34,
-        "e2e_tokens_per_sec": 7.15
+        "gen_tokens_per_sec": 23.68,
+        "e2e_tokens_per_sec": 19.88
       }
     }
   ]

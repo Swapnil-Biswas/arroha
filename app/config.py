@@ -80,7 +80,7 @@ MIN_RETRIEVAL_SCORE: float = float(os.getenv("MIN_RETRIEVAL_SCORE", "0.25"))
 # LLM Generation Configuration (Qwen3 4B 2507 Q4_K_M baseline)
 # ---------------------------------------------------------------------------
 LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "lm_studio")  # lm_studio, openai_compat, mock
-LLM_ENDPOINT: str = os.getenv("LLM_ENDPOINT", "http://localhost:1234/v1")
+LLM_ENDPOINT: str = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:1234/v1")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "lm-studio")
 LLM_MODEL_ID: str = os.getenv("LLM_MODEL_ID", "qwen/qwen3-4b-2507")
 LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "150"))
