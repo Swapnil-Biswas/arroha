@@ -1,0 +1,407 @@
+{
+  "recommendation": "USE SARVAM WITH LOCAL FALLBACK (Default: Local for sub-200ms latency, Sarvam available via STT_BACKEND=sarvam)",
+  "local_stt": {
+    "backend": "local",
+    "total_queries": 15,
+    "error_rate_pct": 0.0,
+    "stt_latency": {
+      "mean_ms": 0.11,
+      "p50_ms": 0.0,
+      "p95_ms": 0.47
+    },
+    "mic_to_first_audio": {
+      "mean_ms": 584.94,
+      "p50_ms": 455.11,
+      "p95_ms": 1314.19
+    },
+    "full_voice_pipeline": {
+      "mean_ms": 800.92,
+      "p50_ms": 621.09,
+      "p95_ms": 1592.4
+    },
+    "per_locale_results": [
+      {
+        "language_code": "en",
+        "language_name": "English",
+        "stt_ms": 1.54,
+        "retrieval_ms": 94.86,
+        "ttft_ms": 2795.9,
+        "tts_chunk1_ms": 46.72,
+        "mic_to_first_audio_ms": 2939.02,
+        "full_pipeline_ms": 3315.89,
+        "transcript": "What was the capital of the Maurya Empire?",
+        "detected_language": "en"
+      },
+      {
+        "language_code": "hi",
+        "language_name": "Hindi",
+        "stt_ms": 0.01,
+        "retrieval_ms": 26.71,
+        "ttft_ms": 243.21,
+        "tts_chunk1_ms": 117.95,
+        "mic_to_first_audio_ms": 387.88,
+        "full_pipeline_ms": 536.8,
+        "transcript": "मौर्य साम्राज्य की राजधानी कौन सी थी?",
+        "detected_language": "hi"
+      },
+      {
+        "language_code": "bn",
+        "language_name": "Bengali",
+        "stt_ms": 0.0,
+        "retrieval_ms": 56.19,
+        "ttft_ms": 413.39,
+        "tts_chunk1_ms": 58.77,
+        "mic_to_first_audio_ms": 528.35,
+        "full_pipeline_ms": 805.16,
+        "transcript": "মৌর্য সাম্রাজ্যের রাজধানী কী ছিল?",
+        "detected_language": "bn"
+      },
+      {
+        "language_code": "ta",
+        "language_name": "Tamil",
+        "stt_ms": 0.0,
+        "retrieval_ms": 25.88,
+        "ttft_ms": 274.31,
+        "tts_chunk1_ms": 114.59,
+        "mic_to_first_audio_ms": 414.78,
+        "full_pipeline_ms": 665.23,
+        "transcript": "மௌரியப் பேரரசின் தலைநகரம் எது?",
+        "detected_language": "ta"
+      },
+      {
+        "language_code": "te",
+        "language_name": "Telugu",
+        "stt_ms": 0.01,
+        "retrieval_ms": 57.83,
+        "ttft_ms": 391.65,
+        "tts_chunk1_ms": 168.35,
+        "mic_to_first_audio_ms": 617.83,
+        "full_pipeline_ms": 734.81,
+        "transcript": "మౌర్య సామ్రాజ్య రాజధాని ఏది?",
+        "detected_language": "te"
+      },
+      {
+        "language_code": "mr",
+        "language_name": "Marathi",
+        "stt_ms": 0.01,
+        "retrieval_ms": 88.88,
+        "ttft_ms": 322.53,
+        "tts_chunk1_ms": 43.69,
+        "mic_to_first_audio_ms": 455.11,
+        "full_pipeline_ms": 523.45,
+        "transcript": "मौर्य साम्राज्याची राजधानी कोणती होती?",
+        "detected_language": "mr"
+      },
+      {
+        "language_code": "gu",
+        "language_name": "Gujarati",
+        "stt_ms": 0.0,
+        "retrieval_ms": 22.62,
+        "ttft_ms": 150.71,
+        "tts_chunk1_ms": 208.12,
+        "mic_to_first_audio_ms": 381.45,
+        "full_pipeline_ms": 652.82,
+        "transcript": "મૌર્ય સામ્રાજ્યની રાજધાની કઈ હતી?",
+        "detected_language": "gu"
+      },
+      {
+        "language_code": "kn",
+        "language_name": "Kannada",
+        "stt_ms": 0.0,
+        "retrieval_ms": 49.81,
+        "ttft_ms": 395.71,
+        "tts_chunk1_ms": 44.97,
+        "mic_to_first_audio_ms": 490.49,
+        "full_pipeline_ms": 628.88,
+        "transcript": "ಮೌರ್ಯ ಸಾಮ್ರಾಜ್ಯದ ರಾಜಧಾನಿ ಯಾವುದಾಗಿತ್ತು?",
+        "detected_language": "kn"
+      },
+      {
+        "language_code": "ml",
+        "language_name": "Malayalam",
+        "stt_ms": 0.0,
+        "retrieval_ms": 22.98,
+        "ttft_ms": 198.45,
+        "tts_chunk1_ms": 94.2,
+        "mic_to_first_audio_ms": 315.63,
+        "full_pipeline_ms": 578.63,
+        "transcript": "മൗര്യ സാമ്രാജ്യത്തിന്റെ തലസ്ഥാനം ഏതായിരുന്നു?",
+        "detected_language": "ml"
+      },
+      {
+        "language_code": "pa",
+        "language_name": "Punjabi",
+        "stt_ms": 0.0,
+        "retrieval_ms": 58.93,
+        "ttft_ms": 146.41,
+        "tts_chunk1_ms": 59.97,
+        "mic_to_first_audio_ms": 265.3,
+        "full_pipeline_ms": 564.6,
+        "transcript": "ਮੌਰੀਆ ਸਾਮਰਾਜ ਦੀ ਰਾਜਧਾਨੀ ਕਿਹੜੀ ਸੀ?",
+        "detected_language": "pa"
+      },
+      {
+        "language_code": "or",
+        "language_name": "Odia",
+        "stt_ms": 0.0,
+        "retrieval_ms": 32.01,
+        "ttft_ms": 102.41,
+        "tts_chunk1_ms": 80.05,
+        "mic_to_first_audio_ms": 214.46,
+        "full_pipeline_ms": 360.04,
+        "transcript": "ମୌର୍ଯ୍ୟ ସାମ୍ରାଜ୍ୟର ରାଜଧାନୀ କ’ଣ ଥିଲା?",
+        "detected_language": "or"
+      },
+      {
+        "language_code": "as",
+        "language_name": "Assamese",
+        "stt_ms": 0.01,
+        "retrieval_ms": 241.65,
+        "ttft_ms": 174.4,
+        "tts_chunk1_ms": 60.66,
+        "mic_to_first_audio_ms": 476.71,
+        "full_pipeline_ms": 621.09,
+        "transcript": "মৌৰ্য সাম্ৰাজ্যৰ ৰাজধানী কি আছিল?",
+        "detected_language": "as"
+      },
+      {
+        "language_code": "ne",
+        "language_name": "Nepali",
+        "stt_ms": 0.0,
+        "retrieval_ms": 137.27,
+        "ttft_ms": 291.14,
+        "tts_chunk1_ms": 92.45,
+        "mic_to_first_audio_ms": 520.87,
+        "full_pipeline_ms": 593.8,
+        "transcript": "मौर्य साम्राज्यको राजधानी कुन थियो?",
+        "detected_language": "ne"
+      },
+      {
+        "language_code": "sa",
+        "language_name": "Sanskrit",
+        "stt_ms": 0.01,
+        "retrieval_ms": 297.94,
+        "ttft_ms": 123.97,
+        "tts_chunk1_ms": 90.42,
+        "mic_to_first_audio_ms": 512.34,
+        "full_pipeline_ms": 853.75,
+        "transcript": "मौर्यसाम्राज्यस्य राजधानी का आसीत्?",
+        "detected_language": "sa"
+      },
+      {
+        "language_code": "ur",
+        "language_name": "Urdu",
+        "stt_ms": 0.01,
+        "retrieval_ms": 48.88,
+        "ttft_ms": 125.32,
+        "tts_chunk1_ms": 79.62,
+        "mic_to_first_audio_ms": 253.83,
+        "full_pipeline_ms": 578.78,
+        "transcript": "موریہ سلطنت کا دارالحکومت کیا تھا؟",
+        "detected_language": "ur"
+      }
+    ]
+  },
+  "sarvam_stt": {
+    "backend": "sarvam",
+    "total_queries": 15,
+    "error_rate_pct": 0.0,
+    "stt_latency": {
+      "mean_ms": 1621.61,
+      "p50_ms": 1584.69,
+      "p95_ms": 3014.89
+    },
+    "mic_to_first_audio": {
+      "mean_ms": 1963.07,
+      "p50_ms": 1832.6,
+      "p95_ms": 3401.27
+    },
+    "full_voice_pipeline": {
+      "mean_ms": 2153.42,
+      "p50_ms": 1979.54,
+      "p95_ms": 3523.03
+    },
+    "per_locale_results": [
+      {
+        "language_code": "en",
+        "language_name": "English",
+        "stt_ms": 1667.46,
+        "retrieval_ms": 34.75,
+        "ttft_ms": 472.4,
+        "tts_chunk1_ms": 101.77,
+        "mic_to_first_audio_ms": 2276.38,
+        "full_pipeline_ms": 2478.05,
+        "transcript": "What was the capital of the Maurya Empire?",
+        "detected_language": "en"
+      },
+      {
+        "language_code": "hi",
+        "language_name": "Hindi",
+        "stt_ms": 2994.14,
+        "retrieval_ms": 48.66,
+        "ttft_ms": 263.21,
+        "tts_chunk1_ms": 44.27,
+        "mic_to_first_audio_ms": 3350.28,
+        "full_pipeline_ms": 3473.55,
+        "transcript": "मौर्य साम्राज्य की राजधानी कौन सी थी?",
+        "detected_language": "hi"
+      },
+      {
+        "language_code": "bn",
+        "language_name": "Bengali",
+        "stt_ms": 1698.03,
+        "retrieval_ms": 18.89,
+        "ttft_ms": 220.81,
+        "tts_chunk1_ms": 20.99,
+        "mic_to_first_audio_ms": 1958.71,
+        "full_pipeline_ms": 2430.79,
+        "transcript": "মৌর্য সাম্রাজ্যের রাজধানী কী ছিল?",
+        "detected_language": "bn"
+      },
+      {
+        "language_code": "ta",
+        "language_name": "Tamil",
+        "stt_ms": 1099.33,
+        "retrieval_ms": 27.94,
+        "ttft_ms": 161.98,
+        "tts_chunk1_ms": 33.75,
+        "mic_to_first_audio_ms": 1323.01,
+        "full_pipeline_ms": 1533.83,
+        "transcript": "மௌரியப் பேரரசின் தலைநகரம் எது?",
+        "detected_language": "ta"
+      },
+      {
+        "language_code": "te",
+        "language_name": "Telugu",
+        "stt_ms": 1721.55,
+        "retrieval_ms": 219.82,
+        "ttft_ms": 94.18,
+        "tts_chunk1_ms": 44.45,
+        "mic_to_first_audio_ms": 2080.01,
+        "full_pipeline_ms": 2270.76,
+        "transcript": "మౌర్య సామ్రాజ్య రాజధాని ఏది?",
+        "detected_language": "te"
+      },
+      {
+        "language_code": "mr",
+        "language_name": "Marathi",
+        "stt_ms": 1776.44,
+        "retrieval_ms": 68.01,
+        "ttft_ms": 317.81,
+        "tts_chunk1_ms": 48.27,
+        "mic_to_first_audio_ms": 2210.53,
+        "full_pipeline_ms": 2279.1,
+        "transcript": "मौर्य साम्राज्याची राजधानी कोणती होती?",
+        "detected_language": "mr"
+      },
+      {
+        "language_code": "gu",
+        "language_name": "Gujarati",
+        "stt_ms": 937.91,
+        "retrieval_ms": 297.47,
+        "ttft_ms": 236.59,
+        "tts_chunk1_ms": 50.27,
+        "mic_to_first_audio_ms": 1522.24,
+        "full_pipeline_ms": 1620.81,
+        "transcript": "મૌર્ય સામ્રાજ્યની રાજધાની કઈ હતી?",
+        "detected_language": "gu"
+      },
+      {
+        "language_code": "kn",
+        "language_name": "Kannada",
+        "stt_ms": 1196.88,
+        "retrieval_ms": 52.05,
+        "ttft_ms": 372.79,
+        "tts_chunk1_ms": 56.01,
+        "mic_to_first_audio_ms": 1677.73,
+        "full_pipeline_ms": 1817.0,
+        "transcript": "ಮೌರ್ಯ ಸಾಮ್ರಾಜ್ಯದ ರಾಜಧಾನಿ ಯಾವುದಾಗಿತ್ತು?",
+        "detected_language": "kn"
+      },
+      {
+        "language_code": "ml",
+        "language_name": "Malayalam",
+        "stt_ms": 3063.32,
+        "retrieval_ms": 38.14,
+        "ttft_ms": 373.0,
+        "tts_chunk1_ms": 45.8,
+        "mic_to_first_audio_ms": 3520.25,
+        "full_pipeline_ms": 3638.46,
+        "transcript": "മൗര്യ സാമ്രാജ്യത്തിന്റെ തലസ്ഥാനം ഏതായിരുന്നു?",
+        "detected_language": "ml"
+      },
+      {
+        "language_code": "pa",
+        "language_name": "Punjabi",
+        "stt_ms": 1393.75,
+        "retrieval_ms": 23.26,
+        "ttft_ms": 141.02,
+        "tts_chunk1_ms": 44.11,
+        "mic_to_first_audio_ms": 1602.15,
+        "full_pipeline_ms": 1741.17,
+        "transcript": "ਮੌਰੀਆ ਸਾਮਰਾਜ ਦੀ ਰਾਜਧਾਨੀ ਕਿਹੜੀ ਸੀ?",
+        "detected_language": "pa"
+      },
+      {
+        "language_code": "or",
+        "language_name": "Odia",
+        "stt_ms": 1264.77,
+        "retrieval_ms": 23.82,
+        "ttft_ms": 118.37,
+        "tts_chunk1_ms": 46.85,
+        "mic_to_first_audio_ms": 1453.8,
+        "full_pipeline_ms": 1847.03,
+        "transcript": "ମୌର୍ଯ୍ୟ ସାମ୍ରାଜ୍ୟର ରାଜଧାନୀ କ’ଣ ଥିଲା?",
+        "detected_language": "or"
+      },
+      {
+        "language_code": "as",
+        "language_name": "Assamese",
+        "stt_ms": 996.81,
+        "retrieval_ms": 20.89,
+        "ttft_ms": 166.82,
+        "tts_chunk1_ms": 68.76,
+        "mic_to_first_audio_ms": 1253.28,
+        "full_pipeline_ms": 1413.39,
+        "transcript": "মৌৰ্য সাম্ৰাজ্যৰ ৰাজধানী কি আছিল?",
+        "detected_language": "as"
+      },
+      {
+        "language_code": "ne",
+        "language_name": "Nepali",
+        "stt_ms": 1128.77,
+        "retrieval_ms": 23.97,
+        "ttft_ms": 162.47,
+        "tts_chunk1_ms": 44.5,
+        "mic_to_first_audio_ms": 1359.7,
+        "full_pipeline_ms": 1426.31,
+        "transcript": "मौर्य साम्राज्यको राजधानी कुन थियो?",
+        "detected_language": "ne"
+      },
+      {
+        "language_code": "sa",
+        "language_name": "Sanskrit",
+        "stt_ms": 1800.35,
+        "retrieval_ms": 24.82,
+        "ttft_ms": 154.57,
+        "tts_chunk1_ms": 45.7,
+        "mic_to_first_audio_ms": 2025.45,
+        "full_pipeline_ms": 2351.58,
+        "transcript": "मौर्यसाम्राज्यस्य राजधानी का आसीत्?",
+        "detected_language": "sa"
+      },
+      {
+        "language_code": "ur",
+        "language_name": "Urdu",
+        "stt_ms": 1584.69,
+        "retrieval_ms": 78.55,
+        "ttft_ms": 87.87,
+        "tts_chunk1_ms": 81.49,
+        "mic_to_first_audio_ms": 1832.6,
+        "full_pipeline_ms": 1979.54,
+        "transcript": "موریہ سلطنت کا دارالحکومت کیا تھا؟",
+        "detected_language": "ur"
+      }
+    ]
+  }
+}

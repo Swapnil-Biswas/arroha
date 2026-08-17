@@ -97,6 +97,13 @@ TTS_SAMPLE_RATE: int = int(os.getenv("TTS_SAMPLE_RATE", "24000"))
 # ---------------------------------------------------------------------------
 # Speech-To-Text Configuration
 # ---------------------------------------------------------------------------
+STT_BACKEND: str = os.getenv("STT_BACKEND", "local")              # local, sarvam
+SARVAM_API_KEY: str = os.getenv("SARVAM_API_KEY", "")
+SARVAM_STT_ENDPOINT: str = os.getenv("SARVAM_STT_ENDPOINT", "https://api.sarvam.ai/speech-to-text")
+SARVAM_STT_MODEL: str = os.getenv("SARVAM_STT_MODEL", "saaras:v4")  # saaras:v4, saaras:v3, saarika:v2.5
+SARVAM_TIMEOUT_SECONDS: float = float(os.getenv("SARVAM_TIMEOUT_SECONDS", "6.0"))
+SARVAM_FALLBACK_TO_LOCAL: bool = os.getenv("SARVAM_FALLBACK_TO_LOCAL", "true").lower() in ("true", "1", "yes")
+
 STT_PROVIDER: str = os.getenv("STT_PROVIDER", "faster_whisper")  # faster_whisper, mock
 STT_MODEL_SIZE: str = os.getenv("STT_MODEL_SIZE", "tiny")        # tiny, base (optimized for <50ms latency)
 STT_DEVICE: str = os.getenv("STT_DEVICE", "cuda" if os.getenv("USE_CUDA", "1") == "1" else "cpu")
