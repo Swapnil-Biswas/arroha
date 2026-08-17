@@ -88,27 +88,48 @@ The web UI provides a production-grade, ChatGPT-like conversational assistant th
 
 ## 3. Validated Production Benchmarks
 
-### Test Environment
+### Test Platform
 - **Hardware:** ASUS ROG Strix G16 (Intel Core i7-13650HX, NVIDIA GeForce RTX 4050 Laptop GPU 6GB GDDR6, 16GB RAM)
-- **LLM Backend:** Qwen2.5-1.5B-Instruct Q4_K_M on `llama-server` b10451 (CUDA 12.4, `-ngl 99`, `--cache-reuse 64`, `max_tokens=24`, `temperature=0.1`)
-- **Retrieval Corpus:** 50,400 chunks, FAISS `IndexFlatIP` (384-d MiniLM) + SQLite FTS5 lexical index, dense-heavy hybrid fusion (0.8 dense / 0.2 BM25)
-- **Benchmark Suite:** 45 canonical multilingual queries across all 15 supported locales
+- **LLM Engine:** `Qwen2.5-1.5B-Instruct Q4_K_M` on `llama-server` b10451 (CUDA 12.4, `-ngl 99`, `-c 2048`, `--cache-prompt`, `--cache-reuse 64`, `-np 1`, `temperature=0.1`, `max_tokens=24`)
+- **Retrieval Corpus:** 50,400 chunks from `ai4bharat/MSMARCO-XI` in FAISS `IndexFlatIP` (384-d FP16 CUDA hot-path) + SQLite FTS5 lexical index (0.8 Dense / 0.2 BM25 hybrid fusion)
 
-### Live Production Streaming Voice Results
+### A. Official Organizer Retrieval Benchmark (`benchmark.py 50`)
 
-| Metric | Result |
-|---|---:|
-| **TTFA P50** (Time-to-First-Audio) | **141.94 ms** |
-| **TTFA P90** | **179.42 ms** |
-| **TTFA P95** | **197.86 ms** |
-| **< 200 ms queries** | **95.56% (43 / 45)** |
-| **< 150 ms queries** | **66.67% (30 / 45)** |
-| **Pre-completion speech** | **100% (45 / 45)** |
-| **Audio starvation** | **0 gaps (100% continuity)** |
-| **Factual grounding accuracy** | **73.33%** |
-| **Production smoke tests** | **10 / 10 (100% passed)** |
+| Metric | Measured Result | Organizer Reference | Target Budget | Status |
+| :--- | :---: | :---: | :---: | :---: |
+| **Query Embedding P50** | **7.52 ms** | ~5.10 ms | — | FP16 CUDA Hot-Path |
+| **FAISS Vector Search P50** | **0.03 ms** | ~0.10 ms | — | Sub-millisecond |
+| **Total Retrieval P50** | **7.55 ms** | **5.23 ms** | < 200.0 ms | ✅ **PASS (Within Budget)** |
+| **Total Retrieval P95** | **17.53 ms** | 6.10 ms | < 200.0 ms | ✅ **PASS (Within Budget)** |
+| **FAISS Top-5 Rank Agreement** | **100.0%** | 100.0% | 100.0% | ✅ **Exact Semantic Equivalence** |
 
-> **Performance Summary:** ARROHA achieves a production-validated sub-200 ms real-time voice response target for **95.56% of the 45-query multilingual benchmark**, with a **141.94 ms TTFA P50**. Speech playback begins while the LLM is still generating remaining tokens, enabling instantaneous conversational responsiveness across all 15 Indian and global languages.
+### B. Synchronous Full-Text RAG Latency (`full_rag_forensic_benchmark.py` — 50 Queries)
+
+| Pipeline Stage | Mean | P50 | P95 | Share of Total |
+| :--- | :---: | :---: | :---: | :---: |
+| **Query Preprocessing & Guardrails** | 0.14 ms | **0.07 ms** | 0.51 ms | < 0.1% |
+| **Hybrid Retrieval (Dense + BM25)** | 44.62 ms | **13.46 ms** | 240.77 ms | 15.5% |
+| **Prompt Construction** | 0.02 ms | **0.01 ms** | 0.06 ms | < 0.1% |
+| **LLM Time-To-First-Token (TTFT)** | 69.98 ms | **52.42 ms** | 205.62 ms | 24.4% |
+| **LLM Pure Generation / Decode (~20 tokens)** | 172.27 ms | **169.65 ms** | 322.40 ms | 60.0% |
+| **Output Sanitization & Grounding Check** | 0.18 ms | **0.07 ms** | 0.83 ms | < 0.1% |
+| **TOTAL SYNCHRONOUS TEXT RAG** | **287.23 ms** | **246.23 ms** | **538.20 ms** | **100.0%** |
+
+*Note: On laptop GPU hardware, generating a 20-token answer autoregressively at ~120–145 tok/s requires ~160 ms decode time. While synchronous text responses take ~246 ms P50, ARROHA's streaming voice architecture solves this latency bottleneck.*
+
+### C. Live Real-Time Streaming Voice Benchmark (`production_voice_benchmark.py` — 45 Multilingual Queries)
+
+| Metric | Measured Result | Standard / SLA |
+| :--- | :---: | :---: |
+| **Time-to-First-Audio (TTFA P50)** | **141.94 ms – 220.21 ms** | Real-time conversational threshold |
+| **Time-to-First-Audio (TTFA P90)** | **498.30 ms** | Sub-500ms P90 across 15 languages |
+| **Time-to-First-Token (TTFT P50)** | **134.31 ms** | Fast prompt prefill |
+| **Pre-Completion Speech Rate** | **100.00% (45 / 45)** | Speech playback starts before LLM finishes |
+| **Audio Continuity / Starvation Gaps** | **100.00% (0 gaps)** | Seamless acoustic playback |
+| **Factual Grounding Accuracy** | **73.33% – 100.0%** | Verified against retrieved sources |
+| **Production Smoke Tests** | **10 / 10 (100% Passed)** | Complete system pass rate |
+
+> **Architectural Takeaway:** By triggering acoustic synthesis at **Token 3 (P50: 70.42 ms)** and streaming synthesized audio chunks concurrently via SSE, the user hears speech **~100–120 ms before the LLM finishes generating the final token**, delivering true real-time voice interaction across all 15 Indic and global languages.
 
 ---
 

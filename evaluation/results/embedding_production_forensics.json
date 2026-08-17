@@ -1,0 +1,74 @@
+{
+  "timestamp": "2026-08-17T11:25:35+05:30",
+  "target_hardware": {
+    "cpu": "Intel Core i7-13650HX (14 cores, 20 threads)",
+    "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU (6GB GDDR6)",
+    "cuda_version": "12.4",
+    "driver_version": "610.88"
+  },
+  "model_configuration": {
+    "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "embedding_dimension": 384,
+    "vector_index": "FAISS IndexFlatIP (Cosine Similarity)",
+    "precision": "FP16 (Half Precision on CUDA)"
+  },
+  "forensic_sub_stage_profiling_50_queries": {
+    "tokenizer_p50_ms": 0.145,
+    "h2d_transfer_p50_ms": 0.116,
+    "forward_pass_p50_ms": 5.900,
+    "pooling_p50_ms": 0.196,
+    "normalize_p50_ms": 0.110,
+    "d2h_transfer_p50_ms": 0.119,
+    "numpy_convert_p50_ms": 0.008,
+    "total_embed_function_p50_ms": 6.607,
+    "faiss_search_p50_ms": 0.045,
+    "total_retrieval_p50_ms": 6.645
+  },
+  "root_cause_analysis": {
+    "discrepancy_explanation": "1. Python UserWarning overhead: Passing padding=True on single string inputs caused HuggingFace tokenizers to trigger warning inspection/stack trace formatting on every call (~12-15 ms CPU penalty). 2. SentenceTransformer wrapper overhead: SentenceTransformer.encode() instantiates DataLoader batch wrappers, does length sorting, and adds multi-module hook dispatch. 3. Direct PyTorch FP16 hot-path without warning emissions reduces pure execution latency to 4.74 ms P50."
+  },
+  "official_benchmark_results": {
+    "baseline_before_optimization": {
+      "embed_p50_ms": 19.89,
+      "search_p50_ms": 0.10,
+      "total_avg_ms": 19.92,
+      "total_p50_ms": 20.00,
+      "total_p95_ms": 22.13,
+      "total_p99_ms": 22.22
+    },
+    "organizer_reference": {
+      "total_avg_ms": 5.31,
+      "total_p50_ms": 5.23,
+      "total_p95_ms": 6.10,
+      "total_p99_ms": 6.11
+    },
+    "production_after_optimization": {
+      "embed_avg_ms": 4.80,
+      "embed_p50_ms": 4.74,
+      "embed_p95_ms": 5.74,
+      "embed_p99_ms": 6.75,
+      "search_avg_ms": 0.03,
+      "search_p50_ms": 0.03,
+      "search_p95_ms": 0.04,
+      "search_p99_ms": 0.05,
+      "total_avg_ms": 4.83,
+      "total_p50_ms": 4.77,
+      "total_p95_ms": 5.78,
+      "total_p99_ms": 6.79
+    }
+  },
+  "correctness_and_fidelity": {
+    "cosine_similarity_vs_baseline": 1.0000,
+    "faiss_top5_rank_agreement_pct": 100.0,
+    "production_smoke_test_score": "10/10"
+  },
+  "production_voice_impact": {
+    "ttfa_p50_ms": 159.14,
+    "ttfa_p90_ms": 192.77,
+    "ttfa_p95_ms": 211.93,
+    "compliance_under_200ms_pct": 91.11,
+    "compliance_under_150ms_pct": 37.78,
+    "pre_completion_speech_rate_pct": 100.0,
+    "audio_continuity_pct": 100.0
+  }
+}
