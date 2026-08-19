@@ -5,7 +5,7 @@ ARROHA is a high-performance, real-time, multilingual Retrieval-Augmented Genera
 
 ---
 
-## 1. System Architecture
+## 1. System Architecture!
 
 ```mermaid
 flowchart TD
