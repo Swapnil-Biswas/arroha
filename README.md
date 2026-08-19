@@ -51,7 +51,7 @@ flowchart LR
 
 Because Chunk 1 provides ~2.5–4.0 seconds of spoken duration, and Qwen2.5-1.5B completes its entire 24-token response in ~214 ms, the playback queue never starves, yielding **100% audio continuity with 0 starvation gaps**.
 
-### Production API Endpoints
+### Production API Endpoints!
 
 - **`POST /voice/stream`**: Server-Sent Events (SSE) streaming endpoint yielding real-time `status`, `transcript`, delta `token`, synthesized `audio_chunk` frames, and `done` latency metrics.
 - **`POST /voice/interrupt`**: Instant barge-in cancellation endpoint that halts active speech synthesis, drains server queues, and returns control to the user.
