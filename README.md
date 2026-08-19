@@ -35,7 +35,7 @@ flowchart TD
 
 ---
 
-## 2. Real-Time Streaming Voice RAG
+## 2. Real-Time Streaming Voice RAG!
 
 Traditional voice RAG systems suffer from a sequential **generate-then-speak** latency barrier (often >1,200 ms). ARROHA overcomes this with a **concurrent producer-consumer streaming architecture**:
 
