@@ -284,9 +284,77 @@
     source.start(0);
   }
 
+  // Natural Browser Speech Synthesis (Crystal-Clear Human Voice)
+  function speakTextWithBrowserTTS(text, langCode) {
+    if (!('speechSynthesis' in window)) return;
+    if (state.mode !== 'voice') return;
+
+    window.speechSynthesis.cancel(); // Cancel any prior speech
+
+    const cleanText = text.replace(/\[Source \d+[^\]]*\]/g, '').replace(/https?:\/\/\S+/g, '').trim();
+    if (!cleanText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    // Map ISO language codes to browser BCP-47 locale tags
+    const localeMap = {
+      'en': 'en-IN',
+      'hi': 'hi-IN',
+      'bn': 'bn-IN',
+      'ta': 'ta-IN',
+      'te': 'te-IN',
+      'mr': 'mr-IN',
+      'gu': 'gu-IN',
+      'kn': 'kn-IN',
+      'ml': 'ml-IN',
+      'pa': 'pa-IN',
+      'or': 'or-IN',
+      'as': 'as-IN',
+      'ne': 'ne-NP',
+      'ur': 'ur-PK'
+    };
+
+    const targetLocale = localeMap[langCode] || langCode || 'en-IN';
+    utterance.lang = targetLocale;
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+
+    // Pick best matching natural voice
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+      const matchedVoice = voices.find(v => v.lang.startsWith(targetLocale.split('-')[0])) ||
+                           voices.find(v => v.lang.includes('IN') || v.lang.includes('en'));
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
+      }
+    }
+
+    utterance.onstart = () => {
+      setVoiceState('speaking');
+    };
+
+    utterance.onend = () => {
+      if (state.voiceState === 'speaking') {
+        setVoiceState('ready');
+      }
+    };
+
+    utterance.onerror = (e) => {
+      console.warn('SpeechSynthesis note:', e);
+      if (state.voiceState === 'speaking') {
+        setVoiceState('ready');
+      }
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
+
   // Instant Barge-In / Interruption Handler
   async function triggerBargeIn() {
     console.log('[Barge-in] Triggering immediate audio cancellation...');
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     if (state.activeAudioSource) {
       try {
         state.activeAudioSource.stop();
@@ -551,7 +619,9 @@
       }
     } else if (event === 'done') {
       finalizeAssistantCard(data);
-      if (!state.isPlayingAudio) {
+      if (state.mode === 'voice' && data.text) {
+        speakTextWithBrowserTTS(data.text, data.language || state.targetLanguage);
+      } else if (!state.isPlayingAudio) {
         setVoiceState('ready');
       }
     } else if (event === 'error') {

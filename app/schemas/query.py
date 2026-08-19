@@ -21,7 +21,8 @@ class QueryRequest(BaseModel):
 
 
 class VoiceQueryRequest(BaseModel):
-    """Voice query with raw base64 encoded audio or metadata."""
+    """Voice query with raw base64 encoded audio or pre-transcribed/typed text query."""
+    query: Optional[str] = Field(None, description="Optional text query if pre-transcribed or typed directly in voice mode")
     audio_base64: Optional[str] = Field(None, description="Base64 encoded audio payload (WAV/MP3/PCM)")
     audio_format: str = Field("wav", description="Audio format (wav, mp3, ogg, webm)")
     sample_rate: int = Field(16000, description="Audio sample rate in Hz")

@@ -60,14 +60,21 @@ class MultilingualEmbedder:
             logger.info("CUDA capability: %s", torch.cuda.get_device_capability(0))
 
         # 1. Initialize tokenizer and direct PyTorch transformer model
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        if self.device == "cuda" and torch.cuda.is_available():
-            self.torch_model = AutoModel.from_pretrained(self.model_name).to(self.device).half().eval()
-        else:
-            self.torch_model = AutoModel.from_pretrained(self.model_name).to(self.device).eval()
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, local_files_only=True)
+            if self.device == "cuda" and torch.cuda.is_available():
+                self.torch_model = AutoModel.from_pretrained(self.model_name, local_files_only=True).to(self.device).half().eval()
+            else:
+                self.torch_model = AutoModel.from_pretrained(self.model_name, local_files_only=True).to(self.device).eval()
+            self.model = SentenceTransformer(self.model_name, device=self.device, local_files_only=True)
+        except Exception:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            if self.device == "cuda" and torch.cuda.is_available():
+                self.torch_model = AutoModel.from_pretrained(self.model_name).to(self.device).half().eval()
+            else:
+                self.torch_model = AutoModel.from_pretrained(self.model_name).to(self.device).eval()
+            self.model = SentenceTransformer(self.model_name, device=self.device)
 
-        # 2. Keep SentenceTransformer instance for batch document embedding
-        self.model = SentenceTransformer(self.model_name, device=self.device)
         self.dim = getattr(self.model, "get_embedding_dimension", getattr(self.model, "get_sentence_embedding_dimension", lambda: EMBEDDING_DIM))() or EMBEDDING_DIM
         logger.info("Embedder initialized. Embedding dimension: %d", self.dim)
 

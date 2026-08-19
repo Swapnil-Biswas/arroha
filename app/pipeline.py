@@ -25,7 +25,7 @@ from app.config import (
     TTS_SAMPLE_RATE,
 )
 from app.generation.llm import LLMGenerator
-from app.generation.prompts import build_rag_prompt
+from app.generation.prompts import build_rag_prompt, resolve_query_language
 from app.guardrails.validator import GuardrailsValidator
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.reranker import Reranker
@@ -129,12 +129,15 @@ class RAGPipeline:
         latency.reranker_ms = round(rerank_ms, 2)
 
         # 4. Prompt Assembly
+        lang_code, _, _ = resolve_query_language(cleaned_query, language_hint=request.language)
         t_prompt_start = time.perf_counter_ns()
-        system_prompt, user_msg = build_rag_prompt(cleaned_query, sources)
+        system_prompt, user_msg, resolved_lang = build_rag_prompt(cleaned_query, sources, language_hint=lang_code)
         latency.prompt_construction_ms = round((time.perf_counter_ns() - t_prompt_start) / 1_000_000.0, 2)
 
         # 5. LLM Generation
-        raw_answer, ttft_ms, gen_ms, tok_count, gen_tps, e2e_tps = self.llm_generator.generate_stream(cleaned_query, sources)
+        raw_answer, ttft_ms, gen_ms, tok_count, gen_tps, e2e_tps = self.llm_generator.generate_stream(
+            cleaned_query, sources, language_hint=resolved_lang
+        )
         latency.llm_ttft_ms = round(ttft_ms, 2)
         latency.llm_generation_ms = round(gen_ms, 2)
 
@@ -178,23 +181,30 @@ class RAGPipeline:
         """
         t_voice_start = time.perf_counter_ns()
 
-        if not request.audio_base64:
+        # 1. Speech-To-Text / Text Query Resolution
+        if request.query and request.query.strip():
+            transcribed_text = request.query.strip()
+            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=request.language_hint)
+            detected_lang = lang_code
+            stt_ms = 0.0
+        elif request.audio_base64:
+            transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
+                audio_data=request.audio_base64,
+                language_hint=request.language_hint,
+                audio_format=request.audio_format,
+            )
+            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=detected_lang)
+            detected_lang = lang_code
+        else:
             return RAGResponse(
                 query="",
                 detected_language="Unknown",
-                answer="No audio payload provided.",
+                answer="No audio payload or query text provided.",
                 is_refusal=True,
-                grounding=GroundingResult(is_grounded=False, refusal_triggered=True, refusal_reason="Empty audio"),
+                grounding=GroundingResult(is_grounded=False, refusal_triggered=True, refusal_reason="Empty query input"),
                 sources=[],
                 latency=LatencyBreakdown(total_ms=0.0),
             )
-
-        # 1. Speech-To-Text
-        transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
-            audio_data=request.audio_base64,
-            language_hint=request.language_hint,
-            audio_format=request.audio_format,
-        )
 
         if not transcribed_text:
             return RAGResponse(
@@ -247,23 +257,30 @@ class RAGPipeline:
         """
         sid = session_id or request.session_id or str(uuid.uuid4())[:8]
 
-        # 1. STT Phase
-        yield VoiceStreamChunk(event="status", session_id=sid, text="LISTENING")
-
-        if not request.audio_base64:
+        # 1. STT / Text Query Resolution
+        if request.query and request.query.strip():
+            transcribed_text = request.query.strip()
+            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=request.language_hint)
+            detected_lang = lang_code
+            stt_ms = 0.0
+            yield VoiceStreamChunk(event="status", session_id=sid, text="THINKING")
+        elif request.audio_base64:
+            yield VoiceStreamChunk(event="status", session_id=sid, text="LISTENING")
+            transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
+                audio_data=request.audio_base64,
+                language_hint=request.language_hint,
+                audio_format=request.audio_format,
+            )
+            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=detected_lang)
+            detected_lang = lang_code
+        else:
             yield VoiceStreamChunk(
                 event="error",
                 session_id=sid,
-                text="No audio payload provided.",
+                text="No audio payload or query text provided.",
                 is_final=True,
             )
             return
-
-        transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
-            audio_data=request.audio_base64,
-            language_hint=request.language_hint,
-            audio_format=request.audio_format,
-        )
 
         if not transcribed_text:
             yield VoiceStreamChunk(
@@ -300,7 +317,7 @@ class RAGPipeline:
         ret_ms = ret_latencies.get("hybrid_fusion_ms", 15.0)
 
         # 3. Concurrent LLM + TTS Streaming
-        system_prompt, user_msg = build_rag_prompt(cleaned_query, sources)
+        system_prompt, user_msg, resolved_lang = build_rag_prompt(cleaned_query, sources, language_hint=detected_lang)
 
         def stream_supplier():
             return self.llm_generator.client.chat.completions.create(
@@ -316,7 +333,7 @@ class RAGPipeline:
 
         for event_chunk in self.voice_pipeline.stream_voice_events(
             query=cleaned_query,
-            language=detected_lang or detected_script,
+            language=resolved_lang or detected_lang or detected_script,
             retrieval_ms=ret_ms,
             llm_stream_generator=stream_supplier,
             session_id=sid,

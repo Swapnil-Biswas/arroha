@@ -83,7 +83,7 @@ LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai_compat")  # openai_compat 
 LLM_ENDPOINT: str = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:8080/v1")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "dummy")
 LLM_MODEL_ID: str = os.getenv("LLM_MODEL_ID", "qwen2.5-1.5b-instruct")
-LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "24"))
+LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "256"))
 LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.1"))
 LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "8.0"))
 

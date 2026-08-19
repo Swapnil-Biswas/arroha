@@ -66,13 +66,14 @@ class LLMGenerator:
         self,
         query: str,
         sources: list[SourceDocument],
+        language_hint: Optional[str] = None,
         stream: bool = False,
     ) -> tuple[str, float]:
         """
         Generate answer from query and retrieved sources.
         Returns (answer_text, generation_latency_ms).
         """
-        system_prompt, user_message = build_rag_prompt(query, sources)
+        system_prompt, user_message, _ = build_rag_prompt(query, sources, language_hint=language_hint)
         t0 = time.perf_counter_ns()
 
         # If explicitly set to mock or if LM Studio is offline, use fast local synthesizer
@@ -106,6 +107,7 @@ class LLMGenerator:
         self,
         query: str,
         sources: list[SourceDocument],
+        language_hint: Optional[str] = None,
     ) -> tuple[str, float, float, int, float, float]:
         """
         Stream generation from Qwen3 to accurately capture TTFT, pure generation time,
@@ -113,7 +115,7 @@ class LLMGenerator:
         Returns:
             (answer_text, ttft_ms, gen_ms, generated_token_count, gen_tok_per_sec, e2e_tok_per_sec)
         """
-        system_prompt, user_message = build_rag_prompt(query, sources)
+        system_prompt, user_message, _ = build_rag_prompt(query, sources, language_hint=language_hint)
         t_start = time.perf_counter_ns()
 
         if self.provider == "mock" or self._offline_detected:
