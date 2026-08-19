@@ -143,7 +143,7 @@ The web UI provides a production-grade, ChatGPT-like conversational assistant th
 
 ---
 
-## 5. Project Structure
+## 5. Project Structure!
 
 ```text
 hhgoaRAG/
