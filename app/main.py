@@ -57,6 +57,17 @@ app.add_middleware(
 pipeline = RAGPipeline()
 
 
+@app.on_event("startup")
+def startup_event():
+    """Pre-warm retriever to ensure sub-50ms latency on very first cold query."""
+    logger.info("Pre-warming hybrid retriever...")
+    try:
+        pipeline.hybrid_retriever.search("warmup query", top_k=1)
+        logger.info("Pre-warming complete.")
+    except Exception as exc:
+        logger.warning(f"Pre-warming failed (index might not exist yet): {exc}")
+
+
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     """Check pipeline health, index status, and hardware acceleration."""

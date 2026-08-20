@@ -34,13 +34,10 @@ if str(BASE_DIR) not in sys.path:
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-LLAMA_BIN_DIR = Path(r"C:\Users\swapn\Downloads\llama-b10451-bin-win-cuda-12.4-x64")
-LLAMA_SERVER_EXE = LLAMA_BIN_DIR / "llama-server.exe"
-MODEL_PATH_1P5B = Path(r"C:\Users\swapn\.cache\huggingface\hub\models--Qwen--Qwen2.5-1.5B-Instruct-GGUF\snapshots\91cad51170dc346986eccefdc2dd33a9da36ead9\qwen2.5-1.5b-instruct-q4_k_m.gguf")
-
+import shutil
 
 def ensure_llama_server() -> Optional[subprocess.Popen]:
-    """Ensures llama-server with Qwen2.5-1.5B is alive on port 8080."""
+    """Ensures llama-server is alive on port 8080, or skips gracefully if not found."""
     import requests
     try:
         r = requests.get("http://127.0.0.1:8080/health", timeout=1.0)
@@ -50,10 +47,22 @@ def ensure_llama_server() -> Optional[subprocess.Popen]:
     except Exception:
         pass
 
-    logger.info("Starting llama-server for Qwen2.5-1.5B on port 8080...")
+    llama_bin = shutil.which("llama-server")
+    if not llama_bin:
+        logger.info("llama-server not found in PATH. Skipping external LLM startup (will use fast_extractive fallback).")
+        return None
+
+    logger.info(f"Starting {llama_bin} on port 8080...")
+    
+    # Check if MODEL_PATH_1P5B is valid, else use a placeholder or skip
+    model_path = os.environ.get("LLAMA_MODEL_PATH", "")
+    if not model_path or not Path(model_path).exists():
+         logger.info("LLAMA_MODEL_PATH not set or invalid. Skipping external LLM startup.")
+         return None
+
     cmd = [
-        str(LLAMA_SERVER_EXE),
-        "-m", str(MODEL_PATH_1P5B),
+        llama_bin,
+        "-m", model_path,
         "-ngl", "99",
         "-c", "2048",
         "--cache-prompt",
@@ -62,10 +71,7 @@ def ensure_llama_server() -> Optional[subprocess.Popen]:
         "--host", "127.0.0.1",
         "--port", "8080",
     ]
-    env = os.environ.copy()
-    if LLAMA_BIN_DIR.exists():
-        env["PATH"] = str(LLAMA_BIN_DIR) + os.pathsep + env.get("PATH", "")
-    proc = subprocess.Popen(cmd, cwd=str(LLAMA_BIN_DIR), env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     for _ in range(60):
         try:

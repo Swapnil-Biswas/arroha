@@ -282,40 +282,42 @@ class LLMGenerator:
 
         best_s = ""
         best_score = -1.0
+        max_overlap = 0
 
         for doc in sources[:5]:
             sentences = [s.strip() for s in doc.text.replace("।", ".").replace("\n", ".").replace("?", ".").split(".") if len(s.strip()) > 8]
             for s_idx, s in enumerate(sentences):
                 s_words = set(clean_w(w) for w in s.split() if len(clean_w(w)) > 1)
                 overlap = len(keywords.intersection(s_words))
+                if overlap > max_overlap:
+                    max_overlap = overlap
+
+                # Only evaluate sentences that actually contain query keywords if keywords exist
+                if keywords and overlap == 0:
+                    continue
                 
                 # Prioritize high keyword overlap and top document retrieval score
-                score = (overlap * 4.0) + (doc.score * 5.0)
+                score = (overlap * 5.0) + (doc.score * 3.0)
                 
                 # Boost first sentence of passage
                 if s_idx == 0:
-                    score += 2.0
+                    score += 1.0
 
                 if score > best_score:
                     best_score = score
                     best_s = s
+
+        # If query has keywords but no candidate sentence matched any keyword, refuse immediately
+        if keywords and max_overlap == 0:
+            return "I do not have enough information in the retrieved sources to answer this question."
 
         if best_s:
             if not best_s.endswith((".", "।", "?", "!")):
                 best_s += "."
             return best_s
 
-        # Fallback to first sentence of top retrieved passage
-        top_text = sources[0].text.strip()
-        first_p = top_text.split(".")[0].strip()
-        if first_p:
-            return (first_p + ".") if not first_p.endswith((".", "।", "?", "!")) else first_p
-        return top_text[:200]
-
-        # Fallback to top source text
-        top_text = sources[0].text.strip()
-        first_p = top_text.split(".")[0].strip()
-        return first_p + "." if first_p else top_text[:150]
+        # Fallback refusal if no matching sentence found
+        return "I do not have enough information in the retrieved sources to answer this question."
 
     def get_stream(self, system_prompt: str, user_message: str, query: str, sources: list[SourceDocument]):
         """

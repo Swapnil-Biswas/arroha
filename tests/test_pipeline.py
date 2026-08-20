@@ -31,7 +31,8 @@ def test_api_metrics(client):
     res = client.get("/metrics")
     assert res.status_code == 200
     data = res.json()
-    assert data["target_latency_ms"] == 200.0
+    assert data["target_latency_ms"] == 50.0
+
 
 
 def test_end_to_end_query(client):
