@@ -11,13 +11,17 @@ Instruments every stage with nanosecond monotonic timers.
 from __future__ import annotations
 
 import logging
+import re
 import time
 import uuid
 from typing import Optional
 
+from app.cache import RAGQueryCache
 from app.config import (
+    ENABLE_QUERY_CACHE,
     LATENCY_BUDGET_MS,
     MIN_RETRIEVAL_SCORE,
+    QUERY_CACHE_SIZE,
     RETRIEVAL_TOP_K,
     STRETCH_LATENCY_BUDGET_MS,
     TTS_BACKEND,
@@ -60,6 +64,7 @@ class RAGPipeline:
         reranker: Optional[Reranker] = None,
         tts_backend: Optional[TTSBackend] = None,
         streaming_voice_pipeline: Optional[StreamingVoicePipeline] = None,
+        query_cache: Optional[RAGQueryCache] = None,
     ) -> None:
         self.hybrid_retriever = hybrid_retriever or HybridRetriever()
         self.llm_generator = llm_generator or LLMGenerator()
@@ -71,6 +76,7 @@ class RAGPipeline:
             tts_backend=self.tts_backend,
             buffer_mode=TTS_BUFFER_MODE,
         )
+        self.query_cache = query_cache or RAGQueryCache(capacity=QUERY_CACHE_SIZE)
 
     def process_query(self, request: QueryRequest) -> RAGResponse:
         """
@@ -78,6 +84,13 @@ class RAGPipeline:
         """
         t_pipeline_start = time.perf_counter_ns()
         request_id = str(uuid.uuid4())[:8]
+
+        # 0. Check Query Cache
+        if ENABLE_QUERY_CACHE:
+            cached_resp = self.query_cache.get(request.query, language=request.language or "")
+            if cached_resp is not None:
+                cached_resp.request_id = request_id
+                return cached_resp
 
         latency = LatencyBreakdown()
 
@@ -110,6 +123,35 @@ class RAGPipeline:
                 request_id=request_id,
             )
 
+        # Check conversational queries
+        norm_q = re.sub(r"[^\w\s]", "", cleaned_query.lower()).strip()
+        conversational_responses = {
+            "hello": "Hello! I am ARROHA, your real-time multilingual voice assistant. How can I help you today?",
+            "hi": "Hi there! How can I assist you with your queries today?",
+            "hey": "Hey! Ask me anything in English or any of the 14 Indic languages.",
+            "who are you": "I am ARROHA, an ultra low-latency multilingual voice-enabled RAG assistant built for Hacker House Goa.",
+            "what is your name": "I am ARROHA, a high-speed multilingual voice RAG system.",
+            "what can you do": "I can answer factual questions with grounded evidence across English and 14 Indic languages in under 50 milliseconds.",
+            "tell me a joke": "Why do programmers prefer dark mode? Because light attracts bugs!",
+            "how are you": "I'm running fast and ready to help! What question would you like to explore?",
+        }
+        if norm_q in conversational_responses:
+            conv_ans = conversational_responses[norm_q]
+            total_ms = (time.perf_counter_ns() - t_pipeline_start) / 1_000_000.0
+            latency.total_ms = round(total_ms, 2)
+            latency.llm_ttft_ms = 0.1
+            latency.llm_generation_ms = 0.1
+            return RAGResponse(
+                query=request.query,
+                detected_language=detected_script,
+                answer=conv_ans,
+                is_refusal=False,
+                grounding=GroundingResult(is_grounded=True, grounding_score=1.0, refusal_triggered=False),
+                sources=[],
+                latency=latency,
+                request_id=request_id,
+            )
+
         # 2. Hybrid Retrieval (Dense Vector + Sparse BM25 + Weighted Fusion)
         top_k = request.top_k or RETRIEVAL_TOP_K
         sources, ret_latencies = self.hybrid_retriever.search(
@@ -117,6 +159,7 @@ class RAGPipeline:
             top_k=top_k,
             dense_weight=request.dense_weight,
             bm25_weight=request.bm25_weight,
+            target_language=request.language,
         )
 
         latency.query_embed_ms = ret_latencies.get("query_embed_ms", 0.0)
@@ -163,7 +206,7 @@ class RAGPipeline:
                 "system_prompt_len": len(system_prompt),
             }
 
-        return RAGResponse(
+        response = RAGResponse(
             query=cleaned_query,
             detected_language=detected_script,
             answer=final_answer,
@@ -175,22 +218,28 @@ class RAGPipeline:
             debug_info=debug_info,
         )
 
+        if ENABLE_QUERY_CACHE and not response.is_refusal:
+            self.query_cache.put(request.query, request.language or "", response)
+
+        return response
+
     def process_voice_query(self, request: VoiceQueryRequest) -> RAGResponse:
         """
         Execute full Voice-Enabled RAG pipeline: Voice -> STT -> RAG Retrieval -> LLM -> Concurrent TTS.
         """
         t_voice_start = time.perf_counter_ns()
 
-        # 1. Speech-To-Text / Text Query Resolution
+        lang_hint = request.language_hint or request.language
+        # 1. STT / Text Query Resolution
         if request.query and request.query.strip():
             transcribed_text = request.query.strip()
-            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=request.language_hint)
+            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=lang_hint)
             detected_lang = lang_code
             stt_ms = 0.0
         elif request.audio_base64:
             transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
                 audio_data=request.audio_base64,
-                language_hint=request.language_hint,
+                language_hint=lang_hint,
                 audio_format=request.audio_format,
             )
             lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=detected_lang)
@@ -257,10 +306,11 @@ class RAGPipeline:
         """
         sid = session_id or request.session_id or str(uuid.uuid4())[:8]
 
+        lang_hint = request.language_hint or request.language
         # 1. STT / Text Query Resolution
         if request.query and request.query.strip():
             transcribed_text = request.query.strip()
-            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=request.language_hint)
+            lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=lang_hint)
             detected_lang = lang_code
             stt_ms = 0.0
             yield VoiceStreamChunk(event="status", session_id=sid, text="THINKING")
@@ -268,7 +318,7 @@ class RAGPipeline:
             yield VoiceStreamChunk(event="status", session_id=sid, text="LISTENING")
             transcribed_text, detected_lang, stt_ms = self.stt.transcribe(
                 audio_data=request.audio_base64,
-                language_hint=request.language_hint,
+                language_hint=lang_hint,
                 audio_format=request.audio_format,
             )
             lang_code, _, _ = resolve_query_language(transcribed_text, language_hint=detected_lang)
@@ -313,23 +363,16 @@ class RAGPipeline:
             return
 
         top_k = request.top_k or RETRIEVAL_TOP_K
-        sources, ret_latencies = self.hybrid_retriever.search(query=cleaned_query, top_k=top_k)
+        sources, ret_latencies = self.hybrid_retriever.search(
+            query=cleaned_query, top_k=top_k, target_language=detected_lang
+        )
         ret_ms = ret_latencies.get("hybrid_fusion_ms", 15.0)
 
         # 3. Concurrent LLM + TTS Streaming
         system_prompt, user_msg, resolved_lang = build_rag_prompt(cleaned_query, sources, language_hint=detected_lang)
 
         def stream_supplier():
-            return self.llm_generator.client.chat.completions.create(
-                model=self.llm_generator.model_id,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg},
-                ],
-                max_tokens=self.llm_generator.max_tokens,
-                temperature=self.llm_generator.temperature,
-                stream=True,
-            )
+            return self.llm_generator.get_stream(system_prompt, user_msg, cleaned_query, sources)
 
         for event_chunk in self.voice_pipeline.stream_voice_events(
             query=cleaned_query,

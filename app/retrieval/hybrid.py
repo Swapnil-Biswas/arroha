@@ -11,10 +11,13 @@ import logging
 import time
 from typing import Any, Optional
 
+from concurrent.futures import ThreadPoolExecutor
+
 from app.config import (
     BM25_WEIGHT,
     DENSE_WEIGHT,
     MIN_RETRIEVAL_SCORE,
+    PARALLEL_HYBRID_SEARCH,
     RETRIEVAL_TOP_K,
 )
 from app.retrieval.bm25 import BM25Retriever
@@ -65,6 +68,7 @@ class HybridRetriever:
         dense_weight: Optional[float] = None,
         bm25_weight: Optional[float] = None,
         fusion_method: str = "weighted",  # 'weighted' or 'rrf'
+        target_language: Optional[str] = None,
     ) -> tuple[list[SourceDocument], dict[str, float]]:
         """
         Execute hybrid retrieval.
@@ -82,11 +86,16 @@ class HybridRetriever:
         # Candidate pool multiplier
         candidate_k = max(top_k * 3, 15)
 
-        # 1. Execute Dense Vector Retrieval
-        vec_results, embed_ms, vec_search_ms = self.vector_retriever.search(query, top_k=candidate_k)
-
-        # 2. Execute BM25 Retrieval
-        bm25_results, bm25_search_ms = self.bm25_retriever.search(query, top_k=candidate_k)
+        if PARALLEL_HYBRID_SEARCH and self.bm25_retriever.is_ready and w_bm25 > 0:
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                future_vec = executor.submit(self.vector_retriever.search, query, top_k=candidate_k)
+                future_bm25 = executor.submit(self.bm25_retriever.search, query, top_k=candidate_k)
+                vec_results, embed_ms, vec_search_ms = future_vec.result()
+                bm25_results, bm25_search_ms = future_bm25.result()
+        else:
+            # Sequential fallback
+            vec_results, embed_ms, vec_search_ms = self.vector_retriever.search(query, top_k=candidate_k)
+            bm25_results, bm25_search_ms = self.bm25_retriever.search(query, top_k=candidate_k)
 
         t_fusion_start = time.perf_counter_ns()
 
@@ -132,6 +141,7 @@ class HybridRetriever:
         for idx, cid in enumerate(all_cids):
             entry = candidate_map[cid]
             raw_d = entry["dense_score"]
+            chunk_lang = str(entry["chunk"].get("language", "")).lower()
 
             if fusion_method == "rrf":
                 # Reciprocal Rank Fusion (k=60)
@@ -140,12 +150,16 @@ class HybridRetriever:
                 b_rank = entry["bm25_rank"]
                 fused = (1.0 / (rrf_k + d_rank)) + (1.0 / (rrf_k + b_rank))
             else:
-                # Weighted linear score fusion gated by absolute dense similarity
-                relative_fused = (w_dense * norm_dense[idx]) + (w_bm25 * norm_bm25[idx])
-                # Scale by absolute cosine score so out-of-domain queries stay low
-                fused = relative_fused * max(raw_d, 0.0)
+                # Weighted linear score fusion
+                fused = (w_dense * norm_dense[idx]) + (w_bm25 * norm_bm25[idx])
 
-            # Filter out candidates with very low absolute relevance
+            # Language match boost if chunk matches query language
+            if target_language:
+                t_clean = target_language.lower()
+                if (t_clean in ("en", "latin") and chunk_lang == "en") or (t_clean == chunk_lang):
+                    fused += 0.20
+
+            # Filter out candidates with zero relevance
             if raw_d >= self.min_score or entry["bm25_score"] > 0:
                 fused_candidates.append((cid, fused, entry))
 

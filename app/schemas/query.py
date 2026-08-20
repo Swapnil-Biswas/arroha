@@ -26,6 +26,7 @@ class VoiceQueryRequest(BaseModel):
     audio_base64: Optional[str] = Field(None, description="Base64 encoded audio payload (WAV/MP3/PCM)")
     audio_format: str = Field("wav", description="Audio format (wav, mp3, ogg, webm)")
     sample_rate: int = Field(16000, description="Audio sample rate in Hz")
+    language: Optional[str] = Field(None, description="Optional ISO/Indic language code (e.g. 'hin', 'ben', 'eng')")
     language_hint: Optional[str] = Field(None, description="Optional language hint for STT")
     top_k: Optional[int] = Field(None, ge=1, le=20)
     include_debug: bool = Field(False)

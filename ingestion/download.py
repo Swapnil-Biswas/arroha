@@ -208,11 +208,32 @@ def create_sample_multilingual_corpus() -> list[DatasetRecord]:
                     "Nagpur is the winter capital and the third largest city of the Indian state of Maharashtra.",
                 ],
                 "Translated_passages": [
-                    "मुंबई ही भारताच्या महाराष्ट्र राज्याची राजधानी आहे. ही भारताची आर्थिक, व्यावसायिक आणि मनोरंजनाची राजधानी आहे.",
+                    "मुंबई ही महाराष्ट्र राज्याची राजधानी आहे. ही भारताची आर्थिक, व्यावसायिक आणि मनोरंजनाची राजधानी आहे.",
                     "पुणे हे महाराष्ट्राची सांस्कृतिक राजधानी आणि प्रमुख आयटी आणि शैक्षणिक केंद्र मानले जाते.",
                     "नागपूर ही हिवाळी राजधानी आणि महाराष्ट्र राज्यातील तिसरे सर्वात मोठे शहर आहे.",
                 ],
                 "is_selected": [1, 0, 0],
+            },
+        ),
+        # Karnataka Sample
+        DatasetRecord(
+            query_id=108,
+            query="कर्नाटक की राजधानी क्या है?",
+            eng_query="What is the capital of Karnataka?",
+            answer="बेंगलुरु कर्नाटक की राजधानी है।",
+            eng_answer="Bengaluru is the capital of Karnataka.",
+            source_lang="en",
+            target_lang="kan",
+            passages={
+                "English_passages": [
+                    "Bengaluru (also known as Bangalore) is the capital and largest city of the Indian state of Karnataka. It is widely known as the Silicon Valley of India.",
+                    "Mysuru is the second-largest city in the state of Karnataka, famous for the grand Mysuru Palace.",
+                ],
+                "Translated_passages": [
+                    "ಬೆಂಗಳೂರು ಕರ್ನಾಟಕ ರಾಜ್ಯದ ರಾಜಧಾನಿ এবং ದೊಡ್ಡ ನಗರವಾಗಿದೆ. ಇದು ಭಾರತದ ಸಿಲಿಕಾನ್ ವ್ಯಾಲಿ ಎಂದು ಪ್ರಸಿದ್ಧವಾಗಿದೆ.",
+                    "ಮೈಸೂರು ಕರ್ನಾಟಕ ರಾಜ್ಯದ ಎರಡನೇ ದೊಡ್ಡ ನಗರವಾಗಿದೆ, ಇದು ಭವ್ಯವಾದ ಮೈಸೂರು ಅರಮನೆಗೆ ಹೆಸರುವಾಸಿಯಾಗಿದೆ.",
+                ],
+                "is_selected": [1, 0],
             },
         ),
         # Telugu Sample
