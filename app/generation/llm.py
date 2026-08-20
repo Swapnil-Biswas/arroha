@@ -267,16 +267,15 @@ class LLMGenerator:
 
     def _generate_mock(self, query: str, sources: list[SourceDocument]) -> str:
         """
-        Grounded answer generator.
-        Extracts the best matching factual sentence from retrieved passages, or returns top passage text.
+        Grounded extractive answer generator.
+        Extracts the best matching factual sentence from retrieved passages using script-aware tokenization.
         """
         if not sources or (sources and sources[0].score < 0.15):
             return "I do not have enough information in the retrieved sources to answer this question."
 
-        def clean_w(w: str) -> str:
-            return re.sub(r"[^\w]", "", w.lower())
+        from app.utils.text import token_set
 
-        q_words = set(clean_w(w) for w in query.split() if len(clean_w(w)) > 1)
+        q_words = token_set(query, min_len=2)
         stop_w = {"what", "is", "are", "was", "were", "the", "of", "a", "an", "in", "on", "at", "for", "to", "and", "or", "which", "who", "where", "how", "tell", "me", "about"}
         keywords = set(w for w in q_words if w not in stop_w)
 
@@ -287,7 +286,7 @@ class LLMGenerator:
         for doc in sources[:5]:
             sentences = [s.strip() for s in doc.text.replace("।", ".").replace("\n", ".").replace("?", ".").split(".") if len(s.strip()) > 8]
             for s_idx, s in enumerate(sentences):
-                s_words = set(clean_w(w) for w in s.split() if len(clean_w(w)) > 1)
+                s_words = token_set(s, min_len=2)
                 overlap = len(keywords.intersection(s_words))
                 if overlap > max_overlap:
                     max_overlap = overlap
@@ -318,6 +317,7 @@ class LLMGenerator:
 
         # Fallback refusal if no matching sentence found
         return "I do not have enough information in the retrieved sources to answer this question."
+
 
     def get_stream(self, system_prompt: str, user_message: str, query: str, sources: list[SourceDocument]):
         """

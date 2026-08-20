@@ -48,6 +48,8 @@ Thumbs.db
 scratch/
 .tmp/
 evaluation/experiments/
+reference/
+
 
 # Test artifacts
 .pytest_cache/

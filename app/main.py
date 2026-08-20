@@ -191,6 +191,73 @@ def get_metrics() -> dict[str, Any]:
     }
 
 
+# Compatibility API Routes (/api/...)
+@app.get("/api/health", response_model=HealthResponse)
+def api_health() -> HealthResponse:
+    """API alias for pipeline health check."""
+    return health()
+
+
+@app.get("/api/metrics")
+def api_metrics() -> dict[str, Any]:
+    """API alias for latency and configuration metrics."""
+    return get_metrics()
+
+
+@app.post("/api/ask")
+def api_ask(request: dict[str, Any]) -> dict[str, Any]:
+    """
+    Unified query endpoint compatible with frontend web clients.
+    Accepts JSON body: { "query": str, "stt_ms": optional float, "language": optional str }
+    """
+    query = request.get("query", "").strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="Query text is required.")
+    
+    stt_ms = float(request.get("stt_ms", 0.0) or 0.0)
+    top_k = int(request.get("top_k", 5) or 5)
+    lang = str(request.get("language", "auto") or "auto")
+
+    req = QueryRequest(query=query, language=lang, top_k=top_k, mode="text")
+    res = pipeline.process_query(req)
+
+    resp_dict = res.model_dump()
+    resp_dict["text"] = res.answer
+    resp_dict["stt_ms"] = stt_ms
+    return resp_dict
+
+
+@app.post("/api/transcribe")
+@app.post("/transcribe")
+async def api_transcribe(file: UploadFile = File(...)) -> dict[str, Any]:
+    """
+    Direct audio transcription endpoint for recorded microphone clips (WAV/WEBM).
+    Returns JSON: { "text": transcript, "ms": stt_latency_ms, "language": detected_lang }
+    """
+    try:
+        import time
+        t0 = time.perf_counter_ns()
+        audio_bytes = await file.read()
+        filename = file.filename or "clip.wav"
+        fmt = filename.split(".")[-1] if "." in filename else "wav"
+
+        stt_res = pipeline.stt.transcribe(audio_bytes, audio_format=fmt)
+        elapsed_ms = round((time.perf_counter_ns() - t0) / 1_000_000.0, 2)
+
+        return {
+            "text": stt_res.text or "",
+            "ms": stt_res.latency_ms or elapsed_ms,
+            "language": stt_res.language or "en",
+        }
+    except Exception as exc:
+        logger.error("Audio transcription failed: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Transcription failed: {exc}",
+        )
+
+
+
 # Static files mount for Web Demo UI
 static_dir = Path(__file__).resolve().parent / "static"
 if static_dir.exists():

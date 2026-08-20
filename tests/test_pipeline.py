@@ -34,6 +34,16 @@ def test_api_metrics(client):
     assert data["target_latency_ms"] == 50.0
 
 
+def test_api_ask(client):
+    res = client.post("/api/ask", json={"query": "What is the capital of France?", "stt_ms": 15.5})
+    assert res.status_code == 200
+    data = res.json()
+    assert "answer" in data
+    assert "text" in data
+    assert data["stt_ms"] == 15.5
+
+
+
 
 def test_end_to_end_query(client):
     res = client.post(
