@@ -8,14 +8,17 @@ Includes a local fallback generator for testing when LM Studio is not active.
 from __future__ import annotations
 
 import logging
+import re
 import time
 from typing import Optional
 
 import threading
 from collections import OrderedDict
 
-import httpx
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 
 from app.config import (
     ENABLE_FAST_PATH_SYNTHESIS,
@@ -34,6 +37,22 @@ from app.schemas.response import SourceDocument
 logger = logging.getLogger(__name__)
 
 STOP_SEQUENCES = ["\n", "\n\n", "User Question:", "Retrieved Context:", "User:", "Question:"]
+
+
+class MockDelta:
+    def __init__(self, content: str) -> None:
+        self.content = content
+
+
+class MockChoice:
+    def __init__(self, delta: MockDelta) -> None:
+        self.delta = delta
+
+
+class MockChunk:
+    def __init__(self, content: str) -> None:
+        self.choices = [MockChoice(MockDelta(content))]
+        self.usage = None
 
 
 class LLMGenerator:
@@ -67,19 +86,29 @@ class LLMGenerator:
         self._cache_lock = threading.Lock()
 
         # Shared persistent connection pool to eliminate TCP handshake latency
-        self._http_client = httpx.Client(
-            limits=httpx.Limits(max_keepalive_connections=20, max_connections=50, keepalive_expiry=120.0),
-            timeout=httpx.Timeout(self.timeout, connect=2.0),
-        )
+        try:
+            import httpx
+            self._http_client = httpx.Client(
+                limits=httpx.Limits(max_keepalive_connections=20, max_connections=50, keepalive_expiry=120.0),
+                timeout=httpx.Timeout(self.timeout, connect=2.0),
+            )
+        except Exception:
+            self._http_client = None
 
         # Initialize OpenAI client with persistent connection pool
-        self.client = OpenAI(
-            base_url=self.endpoint,
-            api_key=self.api_key,
-            timeout=self.timeout,
-            max_retries=0,
-            http_client=self._http_client,
-        )
+        if OpenAI is not None and self._http_client is not None:
+            try:
+                self.client = OpenAI(
+                    base_url=self.endpoint,
+                    api_key=self.api_key,
+                    timeout=self.timeout,
+                    max_retries=0,
+                    http_client=self._http_client,
+                )
+            except Exception:
+                self.client = None
+        else:
+            self.client = None
 
     def generate(
         self,
@@ -104,8 +133,8 @@ class LLMGenerator:
                     latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
                     return cached_ans, latency_ms
 
-        # If explicitly set to mock or if LLM server is offline, use fast local synthesizer
-        if self.provider == "mock" or self._offline_detected:
+        # If explicitly set to mock, fast_extractive, or if LLM server is offline, use fast local synthesizer
+        if self.provider in ("mock", "fast_extractive") or self._offline_detected:
             answer = self._generate_mock(query, sources)
             latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
             return answer, latency_ms
@@ -162,7 +191,7 @@ class LLMGenerator:
                     self._cache.move_to_end(cache_key)
                     return cached_val
 
-        if self.provider == "mock" or self._offline_detected:
+        if self.provider in ("mock", "fast_extractive") or self._offline_detected:
             answer = self._generate_mock(query, sources)
             t_end = time.perf_counter_ns()
             ttft_ms = (t_end - t_start) / 1_000_000.0
@@ -238,17 +267,88 @@ class LLMGenerator:
 
     def _generate_mock(self, query: str, sources: list[SourceDocument]) -> str:
         """
-        Deterministic, grounded answer synthesizer for testing and offline execution.
-        Extracts the most relevant sentence from top source or triggers refusal.
+        Grounded answer generator.
+        Extracts the best matching factual sentence from retrieved passages, or returns top passage text.
         """
-        if not sources or (sources and sources[0].score < 0.2):
+        if not sources or (sources and sources[0].score < 0.15):
             return "I do not have enough information in the retrieved sources to answer this question."
 
-        top_source = sources[0]
-        # Return first 1-2 sentences of top source
-        sentences = [s.strip() for s in top_source.text.split(".") if s.strip()]
-        if not sentences:
-            sentences = [s.strip() for s in top_source.text.split("।") if s.strip()]
-        if sentences:
-            return sentences[0] + "."
-        return top_source.text[:150]
+        def clean_w(w: str) -> str:
+            return re.sub(r"[^\w]", "", w.lower())
+
+        q_words = set(clean_w(w) for w in query.split() if len(clean_w(w)) > 1)
+        stop_w = {"what", "is", "are", "was", "were", "the", "of", "a", "an", "in", "on", "at", "for", "to", "and", "or", "which", "who", "where", "how", "tell", "me", "about"}
+        keywords = set(w for w in q_words if w not in stop_w)
+
+        best_s = ""
+        best_score = -1.0
+
+        for doc in sources[:5]:
+            sentences = [s.strip() for s in doc.text.replace("।", ".").replace("\n", ".").replace("?", ".").split(".") if len(s.strip()) > 8]
+            for s_idx, s in enumerate(sentences):
+                s_words = set(clean_w(w) for w in s.split() if len(clean_w(w)) > 1)
+                overlap = len(keywords.intersection(s_words))
+                
+                # Prioritize high keyword overlap and top document retrieval score
+                score = (overlap * 4.0) + (doc.score * 5.0)
+                
+                # Boost first sentence of passage
+                if s_idx == 0:
+                    score += 2.0
+
+                if score > best_score:
+                    best_score = score
+                    best_s = s
+
+        if best_s:
+            if not best_s.endswith((".", "।", "?", "!")):
+                best_s += "."
+            return best_s
+
+        # Fallback to first sentence of top retrieved passage
+        top_text = sources[0].text.strip()
+        first_p = top_text.split(".")[0].strip()
+        if first_p:
+            return (first_p + ".") if not first_p.endswith((".", "।", "?", "!")) else first_p
+        return top_text[:200]
+
+        # Fallback to top source text
+        top_text = sources[0].text.strip()
+        first_p = top_text.split(".")[0].strip()
+        return first_p + "." if first_p else top_text[:150]
+
+    def get_stream(self, system_prompt: str, user_message: str, query: str, sources: list[SourceDocument]):
+        """
+        Return a generator producing streaming delta token chunks.
+        Supports fast_extractive/mock as well as OpenAI-compatible local APIs.
+        """
+        if self.provider in ("mock", "fast_extractive") or self._offline_detected:
+            answer = self._generate_mock(query, sources)
+            words = answer.split()
+            def mock_stream():
+                for i, w in enumerate(words):
+                    space = " " if i < len(words) - 1 else ""
+                    yield MockChunk(w + space)
+            return mock_stream()
+
+        try:
+            return self.client.chat.completions.create(
+                model=self.model_id,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
+                max_tokens=self.max_tokens,
+                temperature=self.temperature,
+                stream=True,
+            )
+        except Exception as exc:
+            self._offline_detected = True
+            answer = self._generate_mock(query, sources)
+            words = answer.split()
+            def mock_stream():
+                for i, w in enumerate(words):
+                    space = " " if i < len(words) - 1 else ""
+                    yield MockChunk(w + space)
+            return mock_stream()
+

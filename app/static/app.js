@@ -463,6 +463,11 @@
     const cursor = card.querySelector('.streaming-cursor');
     if (cursor) cursor.remove();
 
+    const span = card.querySelector('.streaming-text');
+    if (span && (!span.textContent || !span.textContent.trim()) && doneData.text) {
+      span.textContent = doneData.text;
+    }
+
     const ttfaBadge = card.querySelector('.badge-ttfa-live');
     const langBadge = card.querySelector('.badge-lang-tag');
 
