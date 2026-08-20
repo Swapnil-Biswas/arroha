@@ -83,9 +83,14 @@ LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "openai_compat")  # openai_compat 
 LLM_ENDPOINT: str = os.getenv("LLM_ENDPOINT", "http://127.0.0.1:8080/v1")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "dummy")
 LLM_MODEL_ID: str = os.getenv("LLM_MODEL_ID", "qwen2.5-1.5b-instruct")
-LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "256"))
+LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "64"))
 LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.1"))
 LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "8.0"))
+
+# Caching & Sub-50ms Optimization Configuration
+ENABLE_RAG_CACHE: bool = os.getenv("ENABLE_RAG_CACHE", "true").lower() in ("true", "1", "yes")
+CACHE_MAX_SIZE: int = int(os.getenv("CACHE_MAX_SIZE", "4096"))
+ENABLE_FAST_PATH_SYNTHESIS: bool = os.getenv("ENABLE_FAST_PATH_SYNTHESIS", "true").lower() in ("true", "1", "yes")
 
 # ---------------------------------------------------------------------------
 # Text-To-Speech (TTS) Configuration
@@ -109,10 +114,10 @@ STT_MODEL_SIZE: str = os.getenv("STT_MODEL_SIZE", "tiny")        # tiny, base (o
 STT_DEVICE: str = os.getenv("STT_DEVICE", "cuda" if os.getenv("USE_CUDA", "1") == "1" else "cpu")
 
 # ---------------------------------------------------------------------------
-# Latency & Guardrails Thresholds
+# Latency & Guardrails Thresholds (<50ms Target Budget)
 # ---------------------------------------------------------------------------
-LATENCY_BUDGET_MS: float = float(os.getenv("LATENCY_BUDGET_MS", "200.0"))
-STRETCH_LATENCY_BUDGET_MS: float = float(os.getenv("STRETCH_LATENCY_BUDGET_MS", "150.0"))
+LATENCY_BUDGET_MS: float = float(os.getenv("LATENCY_BUDGET_MS", "50.0"))
+STRETCH_LATENCY_BUDGET_MS: float = float(os.getenv("STRETCH_LATENCY_BUDGET_MS", "30.0"))
 GROUNDING_SIMILARITY_THRESHOLD: float = float(os.getenv("GROUNDING_SIMILARITY_THRESHOLD", "0.35"))
 
 # ---------------------------------------------------------------------------

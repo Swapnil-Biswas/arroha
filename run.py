@@ -50,7 +50,11 @@ def main() -> None:
         port = getattr(args, "port", API_PORT)
         reload = getattr(args, "reload", False)
         print(f"Starting HH Goa Voice RAG Server on http://{host}:{port}...")
-        uvicorn.run("app.main:app", host=host, port=port, reload=reload)
+        if reload:
+            uvicorn.run("app.main:app", host=host, port=port, reload=True)
+        else:
+            from app.main import app as fastapi_app
+            uvicorn.run(fastapi_app, host=host, port=port)
 
     elif args.command == "index":
         from ingestion.build_index import build_pipeline_indexes

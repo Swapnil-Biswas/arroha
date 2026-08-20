@@ -56,6 +56,7 @@ class GuardrailsValidator:
         self,
         raw_answer: str,
         is_refusal: bool = False,
+        language: str = "en",
     ) -> tuple[str, float]:
-        """Sanitize and bound generated output."""
-        return self.output_guardrail.validate_and_clean(raw_answer, is_refusal)
+        """Sanitize and bound generated output with localized refusal."""
+        return self.output_guardrail.validate_and_clean(raw_answer, is_refusal=is_refusal, language=language)

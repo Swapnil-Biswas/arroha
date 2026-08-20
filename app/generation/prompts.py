@@ -67,7 +67,7 @@ def build_rag_prompt(
     query: str,
     sources: list[SourceDocument],
     language_hint: Optional[str] = None,
-    max_context_tokens: int = 600,
+    max_context_tokens: int = 250,
 ) -> tuple[str, str, str]:
     """
     Format system and user messages with retrieved context snippets and language directives.
@@ -76,21 +76,20 @@ def build_rag_prompt(
     lang_code, lang_name, script_name = resolve_query_language(query, language_hint)
 
     system_prompt = (
-        f"You are a factual multilingual AI voice assistant.\n"
-        f"Answer the user's question accurately using ONLY the provided retrieved context.\n\n"
-        f"CRITICAL RULES:\n"
-        f"1. Language Consistency: The user's question is in {lang_name}. You MUST answer strictly in {lang_name} using {script_name} script.\n"
-        f"2. Grounding: Answer strictly using facts from the retrieved context. Do NOT extrapolate or use outside knowledge.\n"
-        f"3. Refusal: If the retrieved context does not contain enough information, state clearly in {lang_name} that the retrieved sources do not contain this information.\n"
-        f"4. Conciseness: Keep the answer strictly to 1 concise, complete sentence. Always finish your thoughts cleanly with proper terminal punctuation (full stop, '।', etc.).\n"
-        f"5. No Meta-Commentary: Do NOT say 'Based on the context'. State the factual answer directly in {lang_name}."
+        f"You are a strictly grounded multilingual factual assistant.\n"
+        f"Answer the user's question accurately using ONLY facts explicitly stated in the Retrieved Context.\n\n"
+        f"CRITICAL CONSTRAINTS:\n"
+        f"1. Zero Hallucination: State ONLY facts explicitly present in the context below. Never use external or parametric knowledge.\n"
+        f"2. Strict Refusal: If the Retrieved Context does NOT explicitly contain the factual answer to the question, you MUST output ONLY: [INSUFFICIENT_CONTEXT]\n"
+        f"3. Language & Script: The user's question is in {lang_name}. State the answer strictly in {lang_name} using {script_name} script.\n"
+        f"4. Direct & Accurate: State the primary entity name and factual answer directly in 1 complete sentence. Do not omit the subject or repeat system rules."
     )
 
     if not sources:
         user_message = (
             f"Retrieved Context:\n[NO RELEVANT CONTEXT FOUND]\n\n"
             f"User Question: {query}\n\n"
-            f"Factual Answer (in {lang_name}):"
+            f"Factual Answer:"
         )
         return system_prompt, user_message, lang_code
 
@@ -102,7 +101,7 @@ def build_rag_prompt(
         clean_text = doc.text.strip()
         if total_chars + len(clean_text) > max_chars and context_snippets:
             break
-        context_snippets.append(f"[Source {idx} - Lang: {doc.language}]: {clean_text}")
+        context_snippets.append(f"[Source {idx}]: {clean_text}")
         total_chars += len(clean_text)
 
     context_block = "\n\n".join(context_snippets)

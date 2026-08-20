@@ -41,6 +41,8 @@ class LatencyBreakdown(BaseModel):
     grounding_check_ms: float = 0.0
     total_ms: float = 0.0
 
+    target_achieved_50ms: bool = False
+    stretch_achieved_30ms: bool = False
     target_achieved_200ms: bool = False
     stretch_achieved_150ms: bool = False
 

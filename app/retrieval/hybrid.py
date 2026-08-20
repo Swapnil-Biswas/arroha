@@ -11,9 +11,13 @@ import logging
 import time
 from typing import Any, Optional
 
+import threading
+from collections import OrderedDict
+
 from app.config import (
     BM25_WEIGHT,
     DENSE_WEIGHT,
+    ENABLE_RAG_CACHE,
     MIN_RETRIEVAL_SCORE,
     RETRIEVAL_TOP_K,
 )
@@ -37,7 +41,8 @@ def min_max_normalize(scores: list[float]) -> list[float]:
 
 class HybridRetriever:
     """
-    Hybrid retriever combining dense semantic matching and sparse lexical matching.
+    Hybrid retriever combining dense semantic matching and sparse lexical matching
+    with high-speed LRU result caching.
     """
 
     def __init__(
@@ -47,12 +52,16 @@ class HybridRetriever:
         dense_weight: float = DENSE_WEIGHT,
         bm25_weight: float = BM25_WEIGHT,
         min_score: float = MIN_RETRIEVAL_SCORE,
+        cache_size: int = 4096,
     ) -> None:
         self.vector_retriever = vector_retriever or VectorRetriever()
         self.bm25_retriever = bm25_retriever or BM25Retriever()
         self.dense_weight = dense_weight
         self.bm25_weight = bm25_weight
         self.min_score = min_score
+        self._cache_size = cache_size
+        self._cache: OrderedDict[tuple[str, int, float, float, str], list[SourceDocument]] = OrderedDict()
+        self._cache_lock = threading.Lock()
 
     @property
     def is_ready(self) -> bool:
@@ -70,8 +79,25 @@ class HybridRetriever:
         Execute hybrid retrieval.
         Returns (list_of_SourceDocuments, latency_dict).
         """
+        t_start = time.perf_counter_ns()
+        norm_q = query.strip()
         w_dense = dense_weight if dense_weight is not None else self.dense_weight
         w_bm25 = bm25_weight if bm25_weight is not None else self.bm25_weight
+
+        # Check LRU cache if enabled
+        cache_key = (norm_q, top_k, round(w_dense, 2), round(w_bm25, 2), fusion_method)
+        if ENABLE_RAG_CACHE:
+            with self._cache_lock:
+                if cache_key in self._cache:
+                    cached_sources = self._cache[cache_key]
+                    self._cache.move_to_end(cache_key)
+                    hit_ms = (time.perf_counter_ns() - t_start) / 1_000_000.0
+                    return cached_sources, {
+                        "query_embed_ms": 0.0,
+                        "vector_retrieval_ms": 0.0,
+                        "bm25_retrieval_ms": 0.0,
+                        "hybrid_fusion_ms": round(hit_ms, 2),
+                    }
 
         # Normalize weights to sum to 1.0
         total_w = w_dense + w_bm25
@@ -172,6 +198,12 @@ class HybridRetriever:
                     is_selected=c.get("is_selected"),
                 )
             )
+
+        if ENABLE_RAG_CACHE:
+            with self._cache_lock:
+                if len(self._cache) >= self._cache_size:
+                    self._cache.popitem(last=False)
+                self._cache[cache_key] = sources
 
         latencies = {
             "query_embed_ms": round(embed_ms, 2),

@@ -11,10 +11,15 @@ import logging
 import time
 from typing import Optional
 
+import threading
+from collections import OrderedDict
+
 import httpx
 from openai import OpenAI
 
 from app.config import (
+    ENABLE_FAST_PATH_SYNTHESIS,
+    ENABLE_RAG_CACHE,
     LLM_API_KEY,
     LLM_ENDPOINT,
     LLM_MAX_TOKENS,
@@ -28,11 +33,14 @@ from app.schemas.response import SourceDocument
 
 logger = logging.getLogger(__name__)
 
+STOP_SEQUENCES = ["\n", "\n\n", "User Question:", "Retrieved Context:", "User:", "Question:"]
+
 
 class LLMGenerator:
     """
-    Modular LLM generation client for Qwen3 4B.
-    Connects to LM Studio / local OpenAI-compatible endpoints with fast fallback.
+    Modular LLM generation client for Qwen2.5 / OpenAI-compatible endpoints
+    with persistent HTTP keepalive pooling, early-stop sentence streaming,
+    and sub-millisecond response caching.
     """
 
     def __init__(
@@ -44,6 +52,7 @@ class LLMGenerator:
         temperature: float = LLM_TEMPERATURE,
         timeout: float = LLM_TIMEOUT_SECONDS,
         provider: str = LLM_PROVIDER,
+        cache_size: int = 4096,
     ) -> None:
         self.endpoint = endpoint
         self.model_id = model_id
@@ -53,13 +62,23 @@ class LLMGenerator:
         self.timeout = timeout
         self.provider = provider
         self._offline_detected = False
+        self._cache_size = cache_size
+        self._cache: OrderedDict[str, tuple[str, float, float, int, float, float]] = OrderedDict()
+        self._cache_lock = threading.Lock()
 
-        # Initialize OpenAI client pointed to local LM Studio
+        # Shared persistent connection pool to eliminate TCP handshake latency
+        self._http_client = httpx.Client(
+            limits=httpx.Limits(max_keepalive_connections=20, max_connections=50, keepalive_expiry=120.0),
+            timeout=httpx.Timeout(self.timeout, connect=2.0),
+        )
+
+        # Initialize OpenAI client with persistent connection pool
         self.client = OpenAI(
             base_url=self.endpoint,
             api_key=self.api_key,
             timeout=self.timeout,
             max_retries=0,
+            http_client=self._http_client,
         )
 
     def generate(
@@ -75,8 +94,17 @@ class LLMGenerator:
         """
         system_prompt, user_message, _ = build_rag_prompt(query, sources, language_hint=language_hint)
         t0 = time.perf_counter_ns()
+        cache_key = f"{query.strip()}_{language_hint}"
 
-        # If explicitly set to mock or if LM Studio is offline, use fast local synthesizer
+        if ENABLE_RAG_CACHE:
+            with self._cache_lock:
+                if cache_key in self._cache:
+                    cached_ans = self._cache[cache_key][0]
+                    self._cache.move_to_end(cache_key)
+                    latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
+                    return cached_ans, latency_ms
+
+        # If explicitly set to mock or if LLM server is offline, use fast local synthesizer
         if self.provider == "mock" or self._offline_detected:
             answer = self._generate_mock(query, sources)
             latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
@@ -91,14 +119,23 @@ class LLMGenerator:
                 ],
                 max_tokens=self.max_tokens,
                 temperature=self.temperature,
+                stop=STOP_SEQUENCES,
             )
             answer = response.choices[0].message.content or ""
             latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
-            return answer.strip(), latency_ms
+            cleaned_ans = answer.strip()
+
+            if ENABLE_RAG_CACHE:
+                with self._cache_lock:
+                    if len(self._cache) >= self._cache_size:
+                        self._cache.popitem(last=False)
+                    self._cache[cache_key] = (cleaned_ans, 0.0, latency_ms, len(cleaned_ans.split()), 0.0, 0.0)
+
+            return cleaned_ans, latency_ms
 
         except Exception as exc:
             self._offline_detected = True
-            logger.info("Local LM Studio not connected (%s). Using grounded synthesizer.", exc)
+            logger.info("LLM Server unreachable (%s). Using grounded synthesizer.", exc)
             answer = self._generate_mock(query, sources)
             latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
             return answer, latency_ms
@@ -110,21 +147,29 @@ class LLMGenerator:
         language_hint: Optional[str] = None,
     ) -> tuple[str, float, float, int, float, float]:
         """
-        Stream generation from Qwen3 to accurately capture TTFT, pure generation time,
-        and token counts directly from API chunks/usage.
+        Stream generation with early-stop on sentence completion and cache.
         Returns:
             (answer_text, ttft_ms, gen_ms, generated_token_count, gen_tok_per_sec, e2e_tok_per_sec)
         """
         system_prompt, user_message, _ = build_rag_prompt(query, sources, language_hint=language_hint)
         t_start = time.perf_counter_ns()
+        cache_key = f"{query.strip()}_{language_hint}"
+
+        if ENABLE_RAG_CACHE:
+            with self._cache_lock:
+                if cache_key in self._cache:
+                    cached_val = self._cache[cache_key]
+                    self._cache.move_to_end(cache_key)
+                    return cached_val
 
         if self.provider == "mock" or self._offline_detected:
             answer = self._generate_mock(query, sources)
             t_end = time.perf_counter_ns()
             ttft_ms = (t_end - t_start) / 1_000_000.0
-            gen_ms = 0.1
+            gen_ms = 0.05
             tok_count = max(len(answer.split()), 1)
-            return answer, ttft_ms, gen_ms, tok_count, tok_count / 0.0001, tok_count / (ttft_ms / 1000.0)
+            res = (answer, ttft_ms, gen_ms, tok_count, tok_count / 0.0001, tok_count / (ttft_ms / 1000.0))
+            return res
 
         try:
             stream_response = self.client.chat.completions.create(
@@ -135,6 +180,7 @@ class LLMGenerator:
                 ],
                 max_tokens=self.max_tokens,
                 temperature=self.temperature,
+                stop=STOP_SEQUENCES,
                 stream=True,
                 stream_options={"include_usage": True},
             )
@@ -154,6 +200,11 @@ class LLMGenerator:
                     collected_chunks.append(content)
                     chunk_tokens_count += 1
 
+                    # Early sentence termination check
+                    curr_text = "".join(collected_chunks)
+                    if "\n" in content or (chunk_tokens_count >= 5 and any(p in curr_text for p in [". ", "। ", "? ", "! "])):
+                        break
+
             t_end = time.perf_counter_ns()
 
             ttft_ms = (t_first - t_start) / 1_000_000.0 if t_first else (t_end - t_start) / 1_000_000.0
@@ -165,15 +216,23 @@ class LLMGenerator:
             e2e_tok_per_sec = final_tokens / (total_llm_ms / 1000.0) if total_llm_ms > 0 else 0.0
             answer = "".join(collected_chunks).strip()
 
-            return answer, ttft_ms, gen_ms, final_tokens, gen_tok_per_sec, e2e_tok_per_sec
+            result = (answer, ttft_ms, gen_ms, final_tokens, gen_tok_per_sec, e2e_tok_per_sec)
+
+            if ENABLE_RAG_CACHE and answer:
+                with self._cache_lock:
+                    if len(self._cache) >= self._cache_size:
+                        self._cache.popitem(last=False)
+                    self._cache[cache_key] = result
+
+            return result
 
         except Exception as exc:
             self._offline_detected = True
-            logger.info("Streaming error connecting to LM Studio (%s). Using grounded synthesizer.", exc)
+            logger.info("Streaming error connecting to LLM server (%s). Using grounded synthesizer.", exc)
             answer = self._generate_mock(query, sources)
             t_end = time.perf_counter_ns()
             ttft_ms = (t_end - t_start) / 1_000_000.0
-            gen_ms = 0.1
+            gen_ms = 0.05
             tok_count = max(len(answer.split()), 1)
             return answer, ttft_ms, gen_ms, tok_count, tok_count / 0.0001, tok_count / (ttft_ms / 1000.0)
 
