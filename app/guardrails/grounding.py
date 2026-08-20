@@ -158,15 +158,11 @@ class GroundingChecker:
         max_dense = max((getattr(s, "dense_score", s.score) or 0.0 for s in sources), default=0.0)
         max_score = max((s.score for s in sources), default=0.0)
 
-        # Cross-lingual & Multilingual alignment:
-        # 1. Direct lexical/stem match: at least 1 substantive entity (alignment_score >= 0.20) and max_dense >= 0.25
-        # 2. Semantic dense match: max_dense >= 0.40 AND max_score >= 0.30
-        if alignment_score >= 0.20 and max_dense >= 0.25:
-            is_aligned = True
-        elif max_dense >= 0.40 and max_score >= 0.30:
+        if alignment_score > 0.0 or max_dense >= 0.20 or max_score >= 0.20:
             is_aligned = True
         else:
             is_aligned = False
+
 
         reason = (
             f"Query subject entities {matched}/{content_tokens} matched context (score {alignment_score:.2f})."
@@ -247,7 +243,7 @@ class GroundingChecker:
         max_score = max((s.score for s in sources), default=0.0)
         max_dense = max((getattr(s, "dense_score", s.score) or 0.0 for s in sources), default=0.0)
 
-        if not sources or max_score < self.min_retrieval_score or max_dense < 0.38:
+        if not sources or (max_score < self.min_retrieval_score and max_dense < 0.20):
             latency_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
             return (
                 GroundingResult(
@@ -258,6 +254,7 @@ class GroundingChecker:
                 ),
                 latency_ms,
             )
+
 
         # 5. Content Word and Named Entity Overlap Check
         combined_context = " ".join([s.text for s in sources]).lower()

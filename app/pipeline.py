@@ -219,7 +219,7 @@ class RAGPipeline:
         # Check Query-Context Subject Entity Alignment:
         is_aligned, align_score, align_reason = self.guardrails.grounding_checker.check_query_context_alignment(cleaned_query, sources)
 
-        if not sources or max_source_score < MIN_RETRIEVAL_SCORE or max_dense_score < 0.38 or not is_aligned:
+        if not sources or (max_source_score < MIN_RETRIEVAL_SCORE and max_dense_score < 0.15) or not is_aligned:
             total_ms = (time.perf_counter_ns() - t_pipeline_start) / 1_000_000.0
             latency.total_ms = round(total_ms, 2)
             latency.target_achieved_50ms = total_ms <= LATENCY_BUDGET_MS
@@ -244,13 +244,8 @@ class RAGPipeline:
                 request_id=request_id,
             )
 
-            if ENABLE_RAG_CACHE:
-                with self._response_cache_lock:
-                    if len(self._response_cache) >= 4096:
-                        self._response_cache.popitem(last=False)
-                    self._response_cache[cache_key] = refusal_res
-
             return refusal_res
+
 
         # 3. Optional Reranking
         sources, rerank_ms = self.reranker.rerank(cleaned_query, sources, top_k=top_k)
@@ -308,11 +303,12 @@ class RAGPipeline:
             debug_info=debug_info,
         )
 
-        if ENABLE_RAG_CACHE:
+        if ENABLE_RAG_CACHE and not grounding_res.refusal_triggered:
             with self._response_cache_lock:
                 if len(self._response_cache) >= 4096:
                     self._response_cache.popitem(last=False)
                 self._response_cache[cache_key] = response
+
 
         return response
 
