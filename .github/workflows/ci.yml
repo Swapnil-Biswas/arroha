@@ -52,20 +52,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Build Index
+        run: |
+          python -m ingestion.build_index
+
       - name: Execute Test Suite
         run: |
           pytest --tb=short -v
-
-  freshstart-ci:
-    name: FreshstartCI Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Run FreshstartCI Action
-        uses: freshstartci/freshstartci@v1
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
