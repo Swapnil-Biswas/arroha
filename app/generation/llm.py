@@ -268,55 +268,85 @@ class LLMGenerator:
     def _generate_mock(self, query: str, sources: list[SourceDocument]) -> str:
         """
         Grounded extractive answer generator.
-        Extracts the best matching factual sentence from retrieved passages using script-aware tokenization.
+        Uses hybrid retrieval architecture (Cosine Similarity + Lexical Overlap Prefilter)
+        to pick the best-supported span from retrieved chunks.
         """
         if not sources or (sources and sources[0].score < 0.15):
             return "I do not have enough information in the retrieved sources to answer this question."
 
+        from indexing.embeddings import MultilingualEmbedder
         from app.utils.text import token_set
+        import numpy as np
 
+        embedder = MultilingualEmbedder.get_instance()
+        qvec, _ = embedder.embed_query(query)
+
+        sentences = []
+        for doc in sources[:3]:
+            # Simple sentence splitting
+            doc_sents = [s.strip() for s in doc.text.replace("।", ".").replace("\n", ".").replace("?", ".").split(".") if len(s.strip()) > 8]
+            sentences.extend(doc_sents)
+            if len(sentences) >= 24:
+                break
+        
+        sentences = sentences[:24]
+
+        if not sentences:
+            return "I do not have enough information in the retrieved sources to answer this question."
+
+        # Lexical overlap
         q_words = token_set(query, min_len=2)
         stop_w = {"what", "is", "are", "was", "were", "the", "of", "a", "an", "in", "on", "at", "for", "to", "and", "or", "which", "who", "where", "how", "tell", "me", "about"}
         keywords = set(w for w in q_words if w not in stop_w)
+        
+        def lexical_overlap(q_kws, sent):
+            if not q_kws:
+                return 0.0
+            s_words = token_set(sent, min_len=2)
+            overlap = len(q_kws.intersection(s_words))
+            return overlap / len(q_kws)
 
-        best_s = ""
-        best_score = -1.0
-        max_overlap = 0
+        lex_all = np.array([lexical_overlap(keywords, s) for s in sentences], dtype=np.float32)
 
-        for doc in sources[:5]:
-            sentences = [s.strip() for s in doc.text.replace("।", ".").replace("\n", ".").replace("?", ".").split(".") if len(s.strip()) > 8]
-            for s_idx, s in enumerate(sentences):
-                s_words = token_set(s, min_len=2)
-                overlap = len(keywords.intersection(s_words))
-                if overlap > max_overlap:
-                    max_overlap = overlap
+        # Prefilter before embedding pass
+        max_embed = 10
+        n_total = len(sentences)
+        if n_total > max_embed:
+            keep = set(range(min(3, n_total))) # keep leading sentences
+            for j in np.argsort(-lex_all):
+                if len(keep) >= max_embed:
+                    break
+                keep.add(int(j))
+            idx = sorted(keep)
+            sentences = [sentences[j] for j in idx]
+            lex = lex_all[idx]
+        else:
+            lex = lex_all
 
-                # Only evaluate sentences that actually contain query keywords if keywords exist
-                if keywords and overlap == 0:
-                    continue
-                
-                # Prioritize high keyword overlap and top document retrieval score
-                score = (overlap * 5.0) + (doc.score * 3.0)
-                
-                # Boost first sentence of passage
-                if s_idx == 0:
-                    score += 1.0
+        # Embed sentences (truncated for latency)
+        to_embed = [s[:256] for s in sentences]
+        svecs = embedder.embed_documents(to_embed, show_progress=False)
 
-                if score > best_score:
-                    best_score = score
-                    best_s = s
+        # Cosine similarity
+        cos = svecs @ qvec
+        cos_n = np.clip((cos - 0.70) / 0.25, 0.0, 1.0)
+        
+        # Blend
+        alpha = 0.75
+        scores = alpha * cos_n + (1.0 - alpha) * lex
 
-        # If query has keywords but no candidate sentence matched any keyword, refuse immediately
-        if keywords and max_overlap == 0:
-            return "I do not have enough information in the retrieved sources to answer this question."
+        best = int(np.argmax(scores))
+        best_score = float(scores[best])
+        best_s = sentences[best]
 
-        if best_s:
-            if not best_s.endswith((".", "।", "?", "!")):
-                best_s += "."
-            return best_s
+        # Refusal threshold based on the blended score
+        if best_score < 0.20:
+             return "I do not have enough information in the retrieved sources to answer this question."
 
-        # Fallback refusal if no matching sentence found
-        return "I do not have enough information in the retrieved sources to answer this question."
+        if not best_s.endswith((".", "।", "?", "!")):
+            best_s += "."
+            
+        return best_s
 
 
     def get_stream(self, system_prompt: str, user_message: str, query: str, sources: list[SourceDocument]):
