@@ -16,7 +16,7 @@ import threading
 import time
 import uuid
 from collections import OrderedDict
-from typing import Optional
+from typing import Generator, Optional
 
 from app.cache import RAGQueryCache
 from app.config import (

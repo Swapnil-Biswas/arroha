@@ -13,6 +13,7 @@ import statistics
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     try:
