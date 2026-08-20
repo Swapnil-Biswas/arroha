@@ -60,3 +60,15 @@ jobs:
         run: |
           pytest --tb=short -v
 
+  freshstart-ci:
+    name: FreshstartCI Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run FreshstartCI Repository Check
+        uses: eshaanagtools/FreshstartCI@main
+        continue-on-error: true
+
+
